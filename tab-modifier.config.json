@@ -1,0 +1,100 @@
+{
+  "groups": [],
+  "rules": [
+    {
+      "detection": "CONTAINS",
+      "id": "D9JgT3P",
+      "name": "worklink:prod:yvs2",
+      "tab": { "title": "【生产】yVS2" },
+      "url_fragment": "https://worklink.yealink.com/yops/app/vs2/"
+    },
+    {
+      "detection": "CONTAINS",
+      "id": "31LIfQf",
+      "name": "worklink:staging:yvs2",
+      "tab": { "title": "【Staging】yVS2" },
+      "url_fragment": "https://staging.worklink.work/yops/app/vs2/"
+    },
+    {
+      "detection": "CONTAINS",
+      "id": "1O1I8US",
+      "name": "worklink:dev:yvs2",
+      "tab": { "title": "【Dev】yVS2" },
+      "url_fragment": "https://dev.worklink.work/yops/app/vs2/"
+    },
+    {
+      "detection": "CONTAINS",
+      "id": "yA7BfkZ",
+      "name": "worklink:prod:yiaas",
+      "tab": { "title": "【生产】yIaaS" },
+      "url_fragment": "https://worklink.yealink.com/yops/app/iaas/"
+    },
+    {
+      "detection": "CONTAINS",
+      "id": "tKQqAYM",
+      "name": "worklink:staging:yiaas",
+      "tab": { "title": "【Staging】yIaaS" },
+      "url_fragment": "https://staging.worklink.work/yops/app/iaas/"
+    },
+    {
+      "detection": "CONTAINS",
+      "id": "YeaJ7jj",
+      "name": "worklink:dev:yiaas",
+      "tab": { "title": "【Dev】yIaaS" },
+      "url_fragment": "https://dev.worklink.work/yops/app/iaas/"
+    },
+    {
+      "detection": "CONTAINS",
+      "id": "L6Yfpos",
+      "name": "worklink:prod:ymonitor",
+      "tab": { "title": "【生产】yMonitor" },
+      "url_fragment": "https://monitor.worklink.work/yops/app/monitor/"
+    },
+    {
+      "detection": "CONTAINS",
+      "id": "M8OBetl",
+      "name": "worklink:staging:ymonitor",
+      "tab": { "title": "【Staging】yMonitor" },
+      "url_fragment": "https://monitor.staging.worklink.work/yops/app/monitor/"
+    },
+    {
+      "detection": "CONTAINS",
+      "id": "fcFiWjh",
+      "name": "worklink:dev:ymonitor",
+      "tab": { "title": "【Dev】yMonitor" },
+      "url_fragment": "https://monitor.dev.worklink.work/yops/app/monitor/"
+    },
+    {
+      "detection": "CONTAINS",
+      "id": "HczAskg",
+      "name": "worklink:prod:yauth",
+      "tab": { "title": "【生产】yAuth" },
+      "url_fragment": "https://worklink.yealink.com/yops/app/auth/"
+    },
+    {
+      "detection": "CONTAINS",
+      "id": "nr1Lk7I",
+      "name": "worklink:staging:yauth",
+      "tab": { "title": "【Staging】yAuth" },
+      "url_fragment": "https://staging.worklink.work/yops/app/auth/"
+    },
+    {
+      "detection": "CONTAINS",
+      "id": "FOacgwh",
+      "name": "worklink:dev:yauth",
+      "tab": { "title": "【Dev】yAuth" },
+      "url_fragment": "https://dev.worklink.work/yops/app/auth/"
+    },
+    {
+      "detection": "CONTAINS",
+      "id": "jSZo4TK",
+      "name": "gitlab:yealink:yvs2",
+      "tab": { "title": "YVS2 - {title}" },
+      "url_fragment": "https://gitcode.yealink.com/server/devops/yops/yvs2/"
+    }
+  ],
+  "settings": {
+    "theme": "cupcake"
+  }
+}
+
