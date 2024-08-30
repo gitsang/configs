@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -e
+
+echo -e "\n\e[32m=====cip.cc=====\e[0m"
+curl "cip.cc"
+
+echo -e "\n\e[32m=====ifconfig.co(v4)=====\e[0m"
+ip=$(curl -s -4 ifconfig.co)
+curl -s "cip.cc/$ip"
+
+echo -e "\n\e[32m=====ifconfig.co(v6)=====\e[0m"
+curl -s -6 "ifconfig.co"

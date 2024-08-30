@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# shellcheck source=/dev/null
+source "${HOME}/.local/etc/explore.conf"
+
+SERVER_DRIVER=${SERVER_DRIVER:-filebrowser}
+SERVER_NET_INTERFACE=${SERVER_NET_INTERFACE:-eth0}
+SERVER_IP=${SERVER_IP:-$(ip a | grep "${SERVER_NET_INTERFACE}" | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | head -n1)}
+DATA_PATH=$(realpath "${1}")
+
+case "${SERVER_DRIVER}" in
+    filebrowser)
+        SERVER_PORT=$(shuf -i 1024-49151 -n 1)
+        echo "[FILEBROWSER]: Serving ${DATA_PATH} on http://${SERVER_IP}:${SERVER_PORT}"
+        docker run -it --rm \
+            --user "$(id -u):$(id -g)" \
+            -p "${SERVER_PORT}:8080" \
+            -v "${DATA_PATH}:/data" \
+            hurlenko/filebrowser \
+                --noauth \
+                --root=/data \
+                --address=0.0.0.0 \
+                --database=/config/filebrowser.db
+        ;;
+    samba)
+        echo "[SAMBA]: Serving ${DATA_PATH} on \\\\${SERVER_IP}\\share"
+        docker run -it --rm \
+            -p 139:139 \
+            -p 445:445 \
+            -v "${DATA_PATH}:/share" \
+            dperson/samba \
+                -u "samba;;$(id -u);samba;$(id -g)" \
+                -s "share;/share;yes;no;yes;;samba;;"
+        ;;
+    ftp)
+        SERVER_PORT=$(shuf -i 1024-49151 -n 1)
+        PASSIVE_PORTS_START=$(shuf -i 1024-49151 -n 1)
+        PASSIVE_PORTS_END=$(( "${PASSIVE_PORTS_START}" +9 ))
+        echo "[FTP]: Serving ${DATA_PATH} on ftp://ftpuser:ftpuser@${SERVER_IP}:${SERVER_PORT} (passive ports: ${PASSIVE_PORTS_START}-${PASSIVE_PORTS_END})"
+        docker run -it --rm \
+            -p "${SERVER_PORT}:21" \
+            -p "${PASSIVE_PORTS_START}-${PASSIVE_PORTS_END}:${PASSIVE_PORTS_START}-${PASSIVE_PORTS_END}" \
+            -v "${DATA_PATH}:/home/ftpusers" \
+            -e "PUBLICHOST=${SERVER_IP}" \
+            -e "FTP_PASSIVE_PORTS=${PASSIVE_PORTS_START}:${PASSIVE_PORTS_END}" \
+            -e "FTP_USER_HOME=/home/ftpusers" \
+            -e "FTP_USER_NAME=ftpuser" \
+            -e "FTP_USER_PASS=ftpuser" \
+            stilliard/pure-ftpd:hardened
+        ;;
+    *)
+        echo "unknown server driver: ${SERVER_DRIVER}"
+        exit 1
+esac
