@@ -1,0 +1,17 @@
+# vi: ft=sshconfig
+
+Host *
+    ServerAliveInterval 60
+    ServerAliveCountMax 30
+
+Host github.com
+    Hostname github.com
+    Preferredauthentications publickey
+    IdentityFile ~/.ssh/id_rsa
+    ProxyCommand /usr/bin/nc -x 127.0.0.1:7890 -X connect %h %p
+
+Host gitlab.home.c8g.top
+    Hostname gitlab.home.c8g.top
+    Preferredauthentications publickey
+    IdentityFile ~/.ssh/id_rsa
+    ProxyCommand /usr/bin/nc -x 127.0.0.1:7490 -X connect %h %p

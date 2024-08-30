@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# shellcheck source=/dev/null
+source "${HOME}/.local/etc/upload.conf"
+
+UPLOAD_URL=${UPLOAD_URL:-""}
+if [ -z "${UPLOAD_URL}" ]; then
+    echo "Please set upload_url in ~/.local/etc/upload/upload.conf"
+fi
+TEMP_FILE_PATH=${temp_file_path:-"/tmp"}
+FILE_PATH=${1}
+FILE_NAME=$(basename "${FILE_PATH}")
+
+if [ -d "${FILE_PATH}" ]; then
+    TGZ_FILE_PATH=${TEMP_FILE_PATH}/${FILE_NAME}.tar.gz
+    tar -zcvf "${TGZ_FILE_PATH}" -C "${FILE_PATH}" .
+    curl -T "${TGZ_FILE_PATH}" "${UPLOAD_URL}/${FILE_NAME}.tar.gz"
+elif [ -f "${FILE_PATH}" ]; then
+    curl -T "${FILE_PATH}" "${UPLOAD_URL}/${FILE_NAME}"
+fi

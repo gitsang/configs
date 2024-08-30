@@ -1,0 +1,235 @@
+#!/bin/bash
+
+# =============== Environment Variable =============== #
+
+# locales
+export LANGUAGE=C.UTF-8
+export LANG=C.UTF-8
+# export LC_ALL=C.UTF-8
+# export LC_CTYPE=C.UTF-8
+# export LC_MESSAGES=C.UTF-8
+# export LESSCHARSET=utf-8
+export TZ=Asia/Shanghai
+
+# display
+REMOTE_IP="$(who am i | sed 's/.*(\(.*\)).*/\1/g')"
+export REMOTE_IP=${REMOTE_IP}
+export DISPLAY="${REMOTE_IP}:0.0"
+
+# path
+export PATH=$PATH:/sbin/:/bin:/usr/sbin:/usr/bin:~/.local/bin:/usr/local/bin:.
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/:./lib:./libs:.
+
+# java
+export JAVA_HOME=/usr/lib/jvm/jre-openjdk
+export JRE_HOME=${JAVA_HOME}/jre
+export CLASSPATH=.:${JAVA_HOME}/lib:${JRE_HOME}/lib:/usr/local/lib
+export M2_HOME=/usr/share/maven
+export MAVEN_HOME=/usr/share/maven
+export PATH=$PATH:${JAVA_HOME}/bin:${M2_HOME}/bin
+
+# golang
+#export GOROOT=/usr/local/go
+export GOPATH=~/.go
+export GOBIN=$GOPATH/bin
+export GOPROXY=https://goproxy.cn
+export GO111MODULE=on
+export CGO_ENABLED=0
+export PATH=$PATH:$GOBIN:$GOROOT/bin
+export GONOPROXY='*.c8g.top'
+export GONOSUMDB='*.c8g.top'
+export GOPRIVATE='gitlab.home.c8g.top'
+#export GOCACHE=off
+
+# node
+# node_version=v18.18.2
+# node_distro=linux-x64
+# export PATH=/usr/local/lib/nodejs/node-$node_version-$node_distro/bin:$PATH
+export PATH=$PATH:/usr/local/lib/nodejs/bin
+
+# libreoffice
+export LibreOffice_PATH=/opt/libreoffice7.1/program
+export PATH=$PATH:$LibreOffice_PATH
+
+# term
+#export TERM=xterm
+export TERM=xterm-256color
+export HISTSIZE=1000000
+
+# podman
+export BUILDAH_FORMAT=docker
+
+# =============== Common specific aliases and functions =============== #
+
+# fuck
+fuck() {
+    if [ $# -eq 1 ] && [ "$1" == "-" ]; then
+        su - root
+    elif [ $# -gt 0 ]; then
+        # shellcheck disable=SC2068
+        sudo $@
+    else
+        # shellcheck disable=SC2046
+        sudo $(fc -ln -1)
+    fi
+}
+
+# list
+alias l='ls --color'
+alias ll='ls -la --color'
+alias lh='ls -lh --color'
+alias la='ls -la --color'
+
+# file system
+alias rm='rm -i'
+alias cp='cp -i'
+alias mv='mv -i'
+
+# change dir
+alias ..='cd ../'
+
+alias ..2='cd ../../'
+alias ...='cd ../../'
+
+alias ..3='cd ../../../'
+alias ....='cd ../../../'
+
+alias ..4='cd ../../../../'
+alias .....='cd ../../../../'
+
+alias ..5='cd ../../../../../'
+alias ......='cd ../../../../../'
+
+alias ..6='cd ../../../../../../'
+alias .......='cd ../../../../../../'
+
+# tail
+alias tailf='tail -f'
+
+# nvim diff
+dirdiff() {
+    DIR1=$(printf '%q' "$1"); shift
+    DIR2=$(printf '%q' "$1"); shift
+    # shellcheck disable=SC2068
+    nvim $@ -c "DirDiff $DIR1 $DIR2"
+}
+
+# docker
+alias d='docker'
+alias dps='docker ps --format "table {{.Image}}\t{{.Networks}}\t{{.Status}}\t{{.RunningFor}}\t{{.State}}\t{{.Names}}"'
+alias rekcod='docker run --rm -v /var/run/docker.sock:/var/run/docker.sock nexdrew/rekcod'
+
+# k8s
+alias k='kubectl'
+
+# podman
+alias p='podman'
+alias pps='podman ps --format "table {{.Image}}\t{{.Networks}}\t{{.Status}}\t{{.RunningFor}}\t{{.State}}\t{{.Names}}"'
+
+# vim
+alias nv='nvim'
+
+# cache
+dropcaches() {
+    free -h | grep Mem
+    sync; echo 1 > /proc/sys/vm/drop_caches
+    sync; echo 2 > /proc/sys/vm/drop_caches
+    sync; echo 3 > /proc/sys/vm/drop_caches
+    free -h | grep Mem
+}
+
+# jobs
+alias j='jobs'
+kj() {
+    kill -9 "%${1}"
+}
+
+# tmpfile
+tmp() {
+    TMPROOT=~/.tmp
+    DATE=$(date +%s)
+    OPT=$1
+    case ${OPT} in
+        dir)
+            TMPDIR=${TMPROOT}/${DATE}
+            mkdir -p "${TMPDIR}"
+            echo -n "Change Dir? (Default:Y) [Y/n]"
+            read -r input
+            case $input in
+                [yY][eE][sS]|[yY]|"")
+                    cd "${TMPDIR}" || exit
+                    ;;
+            esac
+            ;;
+        *)
+            TMPFILE=${TMPROOT}/${DATE}.${OPT}
+            nvim "${TMPFILE}"
+            ;;
+    esac
+}
+
+# make
+mk() {
+    relate_path=$(realpath "$(git rev-parse --show-toplevel)" --relative-to=.)
+    pushd "${relate_path}" || exit
+        make "${@}"
+    popd || exit
+}
+
+# git
+alias gs='git status'
+alias gb='git branch'
+alias gl='git lg'
+alias glg='git log'
+alias gls='git log --stat'
+alias glp='git log -p'
+alias ga='git add'
+alias gaa='git add --all .'
+alias gcm='git commit -m'
+alias gps='git push'
+alias gpl='git pull'
+alias gf='git fetch'
+alias gt='git for-each-ref --sort=creatordate --format "%(creatordate): %(refname)" refs/tags'
+alias gd='git diff'
+alias gdt='git difftool'
+gtps() {
+    TAG=${1}
+    git tag "${TAG}"
+    git push origin "${TAG}"
+}
+gau() {
+    pushd "$(git rev-parse --show-toplevel)" || exit
+        git add --all .
+        branch=$(git branch | grep "\*" | awk '{print $NF}')
+        modified=$(git status | grep -E "modified" | awk '{print "\t" $NF}')
+        deleted=$(git status | grep -E "deleted" | awk '{print "\t" $NF}')
+        new_file=$(git status | grep -E "new file" | awk '{print "\t" $NF}')
+        renamed=$(git status | grep -E "renamed" | awk '{print "\t" $NF}')
+        commit_message="update(auto): auto commit\n\n"
+        if [ -n "$modified" ]; then
+            commit_message+="MODIFIED:\n${modified}\n\n"
+        fi
+        if [ -n "$deleted" ]; then
+            commit_message+="DELETED:\n${deleted}\n\n"
+        fi
+        if [ -n "$new_file" ]; then
+            commit_message+="NEW:\n${new_file}\n\n"
+        fi
+        if [ -n "$renamed" ]; then
+            commit_message+="RENAMED:\n${renamed}\n\n"
+        fi
+        if [ -n "$modified" ] || [ -n "$deleted" ] || [ -n "$new_file" ] || [ -n "$renamed" ]; then
+            echo -e "$commit_message" | git commit -F -
+            git push origin "${branch}"
+        else
+            echo "No changes to commit."
+        fi
+    popd || exit
+}
+grb() {
+    if [ ${#1} -gt 3 ]; then
+        git rebase -i "${1}"
+    else
+        git rebase -i "HEAD~${1}"
+    fi
+}

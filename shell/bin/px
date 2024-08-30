@@ -1,0 +1,61 @@
+#!/bin/zsh
+
+# configure
+show_help() {
+    echo "option:"
+    echo "    -h          help"
+    echo "    -l          list supported proxy"
+    echo "    -c          clean proxy"
+    echo "    -s [name]   set proxy"
+    for PROXY_NAME in "${(@k)PROXY_MAP}"; do
+        echo "${PROXY_NAME} ${PROXY_MAP[${proxy}]}" | awk '{printf "       %-8s %s\n", $1, $2}'
+    done
+}
+
+zsh_main() {
+    if [[ "$#" -eq 0 ]]; then
+        show_help
+    fi
+    while getopts "h?lcs:" opt; do
+        case "$opt" in
+            l)
+                for PROXY_NAME in "${(@k)PROXY_MAP}"; do
+                    echo "${PROXY_NAME} ${PROXY_MAP[${PROXY_NAME}]}" | awk '{printf "%-8s %s\n", $1, $2}'
+                done
+                ;;
+            c)
+                export {HTTP,http,HTTPS,https,FTP,ftp}_{PROXY,proxy}=""
+                echo "Clean proxy"
+                ;;
+            s)
+                for PROXY_NAME in "${(@k)PROXY_MAP}"; do
+                    if [[ "${PROXY_NAME}" == "${OPTARG}" ]]; then
+                        PROXY="${PROXY_MAP[${PROXY_NAME}]}"
+                    fi
+                done
+                export {HTTP,http,HTTPS,https,FTP,ftp}_{PROXY,proxy}="${PROXY}"
+                export NO_PROXY="localhost,127.0.0.1,[::1]"
+                echo "Set proxy: ${PROXY}"
+                ;;
+            h)
+                show_help
+                ;;
+        esac
+    done
+}
+
+# shellcheck source=/dev/null
+source "${HOME}/.local/etc/px.conf"
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    echo "Please source this script:"
+    echo "    . ${0} [option]"
+    exit
+fi
+
+SHELL=$(echo $SHELL | awk -F '/' '{print $NF}')
+if [[ "${SHELL}" == "zsh" ]]; then
+    zsh_main "$@"
+else
+    echo "Only support zsh"
+fi
