@@ -34,12 +34,21 @@ autoload -U colors && colors
 # prompt
 setopt prompt_subst
 prompt_print() {
-    local prompt_triangle=$'\uE0B0'
+    local prompt_separator=$'\uE0B4'
     local prompt_bg=${prompt_bg:-223}
     local prompt_fg=${prompt_fg:-16}
     local prompt_next_bg=${prompt_next_bg:-16}
     local prompt_data=${prompt_data}
-    echo -n "%K{${prompt_bg}}%F{${prompt_fg}} ${prompt_data} %f%k%K{${prompt_next_bg}}%F{${prompt_bg}}${prompt_triangle}%f%k"
+    echo -n "%K{${prompt_bg}}%F{${prompt_fg}} ${prompt_data} %f%k%K{${prompt_next_bg}}%F{${prompt_bg}}${prompt_separator}%f%k"
+}
+rprompt_print() {
+    local rprompt_separator=$'\uE0B6'
+    local rprompt_bg=${rprompt_bg:-223}
+    local rprompt_fg=${rprompt_fg:-16}
+    local rprompt_last_bg=${rprompt_last_bg:-16}
+    local rprompt_data=${rprompt_data}
+    # echo -n "%K{${rprompt_bg}}%F{${rprompt_fg}} ${rprompt_data} %f%k%K{${rprompt_last_bg}}%F{${rprompt_bg}}${rprompt_separator}%f%k"
+    echo -n "%K{${rprompt_last_bg}}%F{${rprompt_bg}}${rprompt_separator}%f%k%K{${rprompt_bg}}%F{${rprompt_fg}} ${rprompt_data} %f%k"
 }
 colorcode() {
     local text=${1}
@@ -63,10 +72,10 @@ netgeo() {
         cat ${netgeo_file} | jq -r '"\(.city) (\(.country))"'
     fi
     if [[ "${proxy_now}" != "${proxy_last}" ]]; then
-        curl -s "https://ipinfo.io/json" 2> /dev/null > ${netgeo_file}
+        curl -skL "https://ipinfo.io/json" 2> /dev/null > ${netgeo_file}
     fi
     if [[ -z "${netgeo_modtime}" ]] || [[ $(( $(date +%s) - ${netgeo_modtime} )) -gt 300 ]]; then
-        nohup curl -s "https://ipinfo.io/json" 2> /dev/null > ${netgeo_file} &
+        nohup curl -skL "https://ipinfo.io/json" 2> /dev/null > ${netgeo_file} &
     fi
 }
 prompt() {
@@ -77,15 +86,14 @@ prompt() {
     else
         prompt_configs+=("223" "16" "%?")
     fi
+    set pipefail
     prompt_configs+=("114" "16" "%n")
-    prompt_configs+=("$(colorcode "$(hostname)")" "16" "%M")
+    prompt_configs+=("$(colorcode "$(hostname)")" "16" "\ueba9  %M")
     prompt_configs+=("42"  "16" "$(date "+%Y-%m-%d")")
     prompt_configs+=("36"  "16" "$(date "+%H:%M:%S")")
     prompt_configs+=("29"  "16" "$(date "+%Z")")
     prompt_configs+=("223" "16" "%~")
-    prompt_configs+=("38"  "16" "$(go version | cut -d " " -f 3)")
-    prompt_configs+=("$(colorcode "$(netgeo)")" "16" "$(netgeo)")
-    prompt_configs+=("68"  "16" "$(git branch --show-current 2&> /dev/null | xargs -I branch echo " branch")")
+    prompt_configs+=("68"  "16" "$(git branch --show-current 2&> /dev/null | xargs -I branch echo "\ue725 branch")")
     echo "%B"
     for (( i=1; i<${#prompt_configs[@]}; i+=3 )); do
         prompt_bg=${prompt_configs[i]}
@@ -101,7 +109,27 @@ prompt() {
     echo "%b"
     echo "%F{117} ➤  %f"
 }
+rprompt() {
+    # icon is generate from https://www.nerdfonts.com/cheat-sheet
+    rprompt_configs+=("38"  "16" "\ue627 $(go version 2>/dev/null | sed 's/go version go\([0-9\.]*\) .*/\1/')")
+    rprompt_configs+=("221"  "16" "\ue73c $(python -V 2>/dev/null | sed 's/Python \([0-9\.]*\).*/\1/')")
+    rprompt_configs+=("160"  "16" "\ue738 $(command -v java >/dev/null && java -version 2>&1 | head -n1 | sed 's/\(.*\) version "\(.*\)" .*/\2/')")
+    rprompt_configs+=("22"  "16" "\ue74e $(node -v 2>/dev/null | sed 's/v\([0-9\.]*\)/\1/')")
+    rprompt_configs+=("$(colorcode "$(netgeo)")" "16" "\uf20e  $(netgeo)")
+    for (( i=1; i<${#rprompt_configs[@]}; i+=3 )); do
+        rprompt_bg=${rprompt_configs[i]}
+        rprompt_fg=${rprompt_configs[i+1]}
+        rprompt_data=${rprompt_configs[i+2]}
+        if [ $i -eq 1 ]; then
+            rprompt_last_bg=16
+        else
+            rprompt_last_bg=${rprompt_configs[i-3]}
+        fi
+        rprompt_print
+    done
+}
 PROMPT='$(prompt)'
+RPROMPT='$(rprompt)'
 
 # =============== fzf =============== #
 
@@ -115,6 +143,11 @@ if [[ ${plugin_loaded} != "true" ]]; then
     plugins=(docker docker-compose)
     fpath=(~/.zsh/completion $fpath)
     autoload -Uz compinit && compinit -i
+
+    # if [[ ! -d ~/.zsh/plugins/fzf-tab ]]; then
+    #     git clone https://github.com/Aloxaf/fzf-tab ~/.zsh/plugins/fzf-tab
+    # fi
+    # source ~/.zsh/plugins/fzf-tab/fzf-tab.plugin.zsh
 
     if [[ ! -d ~/.zsh/plugins/zsh-autosuggestions ]]; then
         git clone https://github.com/zsh-users/zsh-autosuggestions ~/.zsh/plugins/zsh-autosuggestions
@@ -148,3 +181,18 @@ set-window-title() {
 }
 set-window-title
 add-zsh-hook precmd set-window-title
+
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/home/debian/miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/home/debian/miniconda3/etc/profile.d/conda.sh" ]; then
+        . "/home/debian/miniconda3/etc/profile.d/conda.sh"
+    else
+        export PATH="/home/debian/miniconda3/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda initialize <<<
