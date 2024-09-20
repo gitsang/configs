@@ -88,7 +88,7 @@ prompt() {
     fi
     set pipefail
     prompt_configs+=("114" "16" "%n")
-    prompt_configs+=("$(colorcode "$(hostname)")" "16" "%M")
+    prompt_configs+=("$(colorcode "$(hostname)")" "16" "\ueba9  %M")
     prompt_configs+=("42"  "16" "$(date "+%Y-%m-%d")")
     prompt_configs+=("36"  "16" "$(date "+%H:%M:%S")")
     prompt_configs+=("29"  "16" "$(date "+%Z")")
@@ -115,7 +115,7 @@ rprompt() {
     rprompt_configs+=("221"  "16" "\ue73c $(python -V 2>&1 | sed 's/Python \([0-9\.]*\).*/\1/')")
     rprompt_configs+=("160"  "16" "\ue738 $(java -version 2>&1 | head -n1 | sed 's/\(.*\) version "\(.*\)" .*/\2/')")
     rprompt_configs+=("22"  "16" "\ue74e $(node -v 2>&1 | sed 's/v\([0-9\.]*\)/\1/')")
-    rprompt_configs+=("$(colorcode "$(netgeo)")" "16" "\uf44c  $(netgeo)")
+    rprompt_configs+=("$(colorcode "$(netgeo)")" "16" "\uf20e  $(netgeo)")
     for (( i=1; i<${#rprompt_configs[@]}; i+=3 )); do
         rprompt_bg=${rprompt_configs[i]}
         rprompt_fg=${rprompt_configs[i+1]}
