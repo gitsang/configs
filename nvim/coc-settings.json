@@ -1,8 +1,12 @@
 {
   "suggest.noselect": true,
   "suggest.enablePreselect": false,
-  "[py][python][go][golang][rust][lua][c][js][javascript][markdown]": {
+  "[py][python][go][golang][rust][lua][js][javascript][markdown]": {
     "coc.preferences.formatOnSave": true,
+    "coc.preferences.formatOnType": true
+  },
+  "[c]": {
+    "coc.preferences.formatOnSave": false,
     "coc.preferences.formatOnType": true
   },
   "go.goplsOptions": {
@@ -15,6 +19,7 @@
   "prettier.trailingComma": "es5",
   "prettier.semi": false,
   "prettier.singleQuote": true,
-  "clangd.path": "~/.config/coc/extensions/coc-clangd-data/install/17.0.3/clangd_17.0.3/bin/clangd",
-  "snippets.ultisnips.pythonPrompt": false
+  "snippets.ultisnips.pythonPrompt": false,
+  "pyright.enable": true,
+  "#clangd.path": "~/.config/coc/extensions/coc-clangd-data/install/18.1.3/clangd_18.1.3/bin/clangd"
 }
