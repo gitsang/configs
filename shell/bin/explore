@@ -33,8 +33,8 @@ case "${SERVER_DRIVER}" in
                 -s "share;/share;yes;no;yes;;samba;;"
         ;;
     ftp)
-        SERVER_PORT=$(shuf -i 1024-49151 -n 1)
-        PASSIVE_PORTS_START=$(shuf -i 1024-49151 -n 1)
+        SERVER_PORT=3387
+        PASSIVE_PORTS_START=13387
         PASSIVE_PORTS_END=$(( "${PASSIVE_PORTS_START}" +9 ))
         echo "[FTP]: Serving ${DATA_PATH} on ftp://ftpuser:ftpuser@${SERVER_IP}:${SERVER_PORT} (passive ports: ${PASSIVE_PORTS_START}-${PASSIVE_PORTS_END})"
         docker run -it --rm \
@@ -47,6 +47,31 @@ case "${SERVER_DRIVER}" in
             -e "FTP_USER_NAME=ftpuser" \
             -e "FTP_USER_PASS=ftpuser" \
             stilliard/pure-ftpd:hardened
+        ;;
+    nfs)
+        SERVER_PORT=2049
+        echo "[NFS]: Serving ${DATA_PATH} on \\\\${SERVER_IP}\\share"
+        docker run -it --rm \
+            --privileged \
+            -p "${SERVER_PORT}:2049" \
+            -v "${DATA_PATH}:/nfsshare/share" \
+            -e NFS_DIR=/nfsshare \
+            -e NFS_DOMAIN=* \
+            -e NFS_OPTION="fsid=0,rw,sync,no_root_squash,all_squash,anonuid=0,anongid=0,no_subtree_check" \
+            gists/nfs-server
+        ;;
+    webdav)
+        SERVER_PORT=9328
+        echo "[WebDav]: Serving ${DATA_PATH} on http://${SERVER_IP}:${SERVER_PORT}"
+        docker run -it --rm \
+            --name rclone-webdav-server \
+            -p ${SERVER_PORT}:${SERVER_PORT} \
+            -v "${DATA_PATH}:/var/lib/dav/data" \
+            rclone/rclone \
+                --verbose \
+                serve webdav \
+                remote:/ \
+                --addr 0.0.0.0:${SERVER_PORT}
         ;;
     *)
         echo "unknown server driver: ${SERVER_DRIVER}"
