@@ -21,7 +21,7 @@ export PATH=$PATH:/sbin/:/bin:/usr/sbin:/usr/bin:~/.local/bin:/usr/local/bin:.
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/:./lib:./libs:.
 
 # java
-export JAVA_HOME=/usr/lib/jvm/jre-openjdk
+export JAVA_HOME='/usr/lib/jvm/jdk-22.0.1'
 export JRE_HOME=${JAVA_HOME}/jre
 export CLASSPATH=.:${JAVA_HOME}/lib:${JRE_HOME}/lib:/usr/local/lib
 export M2_HOME=/usr/share/maven
@@ -118,6 +118,18 @@ dirdiff() {
 alias d='docker'
 alias dps='docker ps --format "table {{.Image}}\t{{.Networks}}\t{{.Status}}\t{{.RunningFor}}\t{{.State}}\t{{.Names}}"'
 alias rekcod='docker run --rm -v /var/run/docker.sock:/var/run/docker.sock nexdrew/rekcod'
+dpl() {
+    mirror=dockerhub.icu
+    docker pull "${mirror}/${1}"
+    docker tag "${mirror}/${1}" "${1}"
+    docker rmi "${mirror}/${1}"
+}
+dive() {
+    docker run --rm -it \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        wagoodman/dive:latest \
+        "$@"
+}
 
 # k8s
 alias k='kubectl'
@@ -146,24 +158,31 @@ kj() {
 
 # tmpfile
 tmp() {
-    TMPROOT=~/.tmp
-    DATE=$(date +%s)
-    OPT=$1
-    case ${OPT} in
+    TMPFILE_ROOT="${HOME}/.tmp"
+    TMPFILE_DATE=$(date +%s)
+    TMPFILE_DRIVER=nvim
+    TMPFILE_TYPE=$1
+    case ${TMPFILE_TYPE} in
         dir)
-            TMPDIR=${TMPROOT}/${DATE}
-            mkdir -p "${TMPDIR}"
+            TMPDIR_PATH=${TMPFILE_ROOT}/${TMPFILE_DATE}
+            mkdir -p "${TMPDIR_PATH}"
             echo -n "Change Dir? (Default:Y) [Y/n]"
             read -r input
             case $input in
                 [yY][eE][sS]|[yY]|"")
-                    cd "${TMPDIR}" || exit
+                    cd "${TMPDIR_PATH}" || exit
                     ;;
             esac
             ;;
+        "")
+            SELECTED_FILE=$(find ~/.tmp -maxdepth 1 -exec basename {} \; | sort -r | fzf --height 40% --layout reverse)
+            if [ -n "$SELECTED_FILE" ]; then
+                ${TMPFILE_DRIVER} "${TMPFILE_ROOT}/${SELECTED_FILE}"
+            fi
+            ;;
         *)
-            TMPFILE=${TMPROOT}/${DATE}.${OPT}
-            nvim "${TMPFILE}"
+            TMPFILE=${TMPFILE_ROOT}/${TMPFILE_DATE}.${TMPFILE_TYPE}
+            ${TMPFILE_DRIVER} "${TMPFILE}"
             ;;
     esac
 }
@@ -178,7 +197,6 @@ mk() {
 
 # git
 alias gs='git status'
-alias gb='git branch'
 alias gl='git lg'
 alias glg='git log'
 alias gls='git log --stat'
@@ -192,6 +210,14 @@ alias gf='git fetch'
 alias gt='git for-each-ref --sort=creatordate --format "%(creatordate): %(refname)" refs/tags'
 alias gd='git diff'
 alias gdt='git difftool'
+alias gb='git branch'
+gbc() {
+    # shellcheck disable=SC2068
+    branch=$(git branch $@ | sort -r | cut -c 3- | fzf --height 40% --layout reverse)
+    if [ -n "${branch}" ]; then
+        git checkout "${branch}"
+    fi
+}
 gtps() {
     TAG=${1}
     git tag "${TAG}"

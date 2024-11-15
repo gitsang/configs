@@ -144,10 +144,10 @@ if [[ ${plugin_loaded} != "true" ]]; then
     fpath=(~/.zsh/completion $fpath)
     autoload -Uz compinit && compinit -i
 
-    # if [[ ! -d ~/.zsh/plugins/fzf-tab ]]; then
-    #     git clone https://github.com/Aloxaf/fzf-tab ~/.zsh/plugins/fzf-tab
-    # fi
-    # source ~/.zsh/plugins/fzf-tab/fzf-tab.plugin.zsh
+    if [[ ! -d ~/.zsh/plugins/fzf-tab ]]; then
+        git clone https://github.com/Aloxaf/fzf-tab ~/.zsh/plugins/fzf-tab
+    fi
+    source ~/.zsh/plugins/fzf-tab/fzf-tab.plugin.zsh
 
     if [[ ! -d ~/.zsh/plugins/zsh-autosuggestions ]]; then
         git clone https://github.com/zsh-users/zsh-autosuggestions ~/.zsh/plugins/zsh-autosuggestions
