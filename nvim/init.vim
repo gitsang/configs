@@ -9,7 +9,8 @@ source ~/.config/nvim/config.vim
 "--------------------
 
 let mapleader=" "
-set pastetoggle=<F12>
+" set pastetoggle=<F12>
+nnoremap <F12> :set paste!<CR>
 set nocompatible
 " set mouse=nvi
 set mouse=

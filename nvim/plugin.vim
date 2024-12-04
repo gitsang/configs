@@ -32,11 +32,6 @@ call plug#begin()
                 \ ]
             let g:startify_custom_header = 'startify#pad(g:startify_ascii + startify#fortune#boxed())'
 
-    "[easymotion]"
-
-        Plug 'easymotion/vim-easymotion'
-        nmap ss <Plug>(easymotion-s2)
-
     "[color]"
 
         Plug 'morhetz/gruvbox'
@@ -162,17 +157,32 @@ call plug#begin()
     " Tools
     "--------------------
 
+    "[easymotion]"
+
+        Plug 'easymotion/vim-easymotion'
+        nmap ss <Plug>(easymotion-s2)
+
     "[diff]"
 
         Plug 'will133/vim-dirdiff'
 
-    "[async]"
+    "[term]"
 
         Plug 'tpope/vim-dispatch'
 
         Plug 'skywind3000/asyncrun.vim'
            let g:asyncrun_open = 8
            let g:asyncrun_qfid = 10
+
+        Plug 'voldikss/vim-floaterm'
+            nnoremap <silent> <F10><F10> :FloatermToggle<CR>
+            tnoremap <silent> <F10><F10> <C-\><C-n>:FloatermToggle<CR>
+            nnoremap <silent> <F10>\     :FloatermNew<CR>
+            tnoremap <silent> <F10>\     <C-\><C-n>:FloatermNew<CR>
+            nnoremap <silent> <F10>[     :FloatermPrev<CR>
+            tnoremap <silent> <F10>[     <C-\><C-n>:FloatermPrev<CR>
+            nnoremap <silent> <F10>]     :FloatermNext<CR>
+            tnoremap <silent> <F10>]     <C-\><C-n>:FloatermNext<CR>
 
     "--------------------
     " Coding Support
@@ -181,6 +191,204 @@ call plug#begin()
     "[converter]"
 
         Plug 'gitsang/vim-case-converter'
+
+    "[linter]"
+
+        Plug 'dense-analysis/ale'
+            source ~/.config/nvim/proto.vim
+            let g:ale_set_highlights = 0
+            let g:ale_set_quickfix = 1
+            let g:ale_sign_error = '✖'
+            let g:ale_sign_warning = 'ℹ'
+            let g:ale_statusline_format = ['✖ %d', 'ℹ %d', '✔ OK']
+            let g:ale_echo_msg_error_str = 'E'
+            let g:ale_echo_msg_warning_str = 'W'
+            let g:ale_echo_msg_format = '[%linter%] %s [%severity%]'
+            let g:ale_lint_on_enter = 1
+            let g:ale_fix_on_save = 1
+            nmap <Leader>ep <Plug>(ale_previous_wrap)
+            nmap <Leader>en <Plug>(ale_next_wrap)
+            nmap <Leader>et :ALEToggle<CR>
+            nmap <Leader>ed :ALEDetail<CR>
+            let g:ale_linters = {
+                \ 'go': ['go vet', 'go fmt', 'golint', 'gosimple'],
+                \ }
+            let g:ale_fixers = {
+                \   '*': ['remove_trailing_lines', 'trim_whitespace'],
+                \   'javascript': ['eslint'],
+                \}
+
+        Plug 'itspriddle/vim-shellcheck'
+
+    "[formater]"
+
+        " Vim tools for comment stuff out
+        Plug 'tpope/vim-commentary'
+
+        " Vim script for text filtering and alignment
+        Plug 'godlygeek/tabular'
+
+    "[ai]"
+
+        Plug 'Exafunction/codeium.vim', { 'branch': 'main' }
+            let g:codeium_no_map_tab = 1
+            imap <script><silent><nowait><expr> <C-g> codeium#Accept()
+            imap <C-;>   <Cmd>call codeium#CycleCompletions(1)<CR>
+            imap <C-,>   <Cmd>call codeium#CycleCompletions(-1)<CR>
+            imap <C-x>   <Cmd>call codeium#Clear()<CR>
+
+    "[debug]"
+
+        Plug 'sebdah/vim-delve'
+            nmap <leader>B :DlvToggleBreakpoint<cr>
+            nmap <leader>T :DlvToggleTracepoint<cr>
+
+    "[git]"
+
+        Plug 'airblade/vim-gitgutter'
+            let g:gitgutter_max_signs = 500
+            " map key
+            let g:gitgutter_map_keys = 0
+            " colors
+            let g:gitgutter_override_sign_column_highlight = 0
+
+            nmap <leader>g <Plug>(GitGutterPreviewHunk)
+            nmap <leader><backspace> <Plug>(GitGutterUndoHunk)
+
+    "[markdown]"
+
+        Plug 'plasticboy/vim-markdown', { 'for': ['markdown'] }
+            let g:vim_markdown_folding_disabled = 1
+            let g:vim_markdown_toc_autofit = 1
+            let g:vim_markdown_follow_anchor = 1
+
+        Plug 'gitsang/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
+            let g:mkdp_auto_start = 0
+            let g:mkdp_auto_close = 1
+            let g:mkdp_refresh_slow = 0
+            let g:mkdp_command_for_global = 0
+            let g:mkdp_open_to_the_world = 1
+            let g:mkdp_open_ip = main_ip
+            let g:mkdp_port = '7777'
+            let g:mkdp_browser = default_browser
+            let g:mkdp_echo_preview_url = 1
+            let g:mkdp_browserfunc = ''
+            let g:mkdp_preview_options = {
+                \ 'mkit': {},
+                \ 'katex': {},
+                \ 'uml': {},
+                \ 'maid': {},
+                \ 'disable_sync_scroll': 0,
+                \ 'sync_scroll_type': 'middle',
+                \ 'hide_yaml_meta': 1,
+                \ 'sequence_diagrams': {},
+                \ 'flowchart_diagrams': {},
+                \ 'content_editable': v:false,
+                \ 'disable_filename': 0
+                \ }
+            let g:mkdp_markdown_css = ''
+            let g:mkdp_highlight_css = ''
+            let g:mkdp_page_title = '「${name}」'
+            let g:mkdp_filetypes = ['markdown']
+
+            nmap <leader>m <Plug>MarkdownPreviewToggle
+            nmap <F8> <Plug>MarkdownPreviewToggle
+
+        Plug 'mzlogin/vim-markdown-toc'
+            let g:vmt_auto_update_on_save = 1
+            let g:vmt_dont_insert_fence = 0
+            let g:vmt_fence_text = 'markdown-toc'
+            let g:vmt_fence_closing_text = '/markdown-toc'
+            let g:vmt_fence_hidden_markdown_style = ''
+            let g:vmt_cycle_list_item_markers = 0
+            let g:vmt_list_item_char = '-'
+            let g:vmt_include_headings_before = 0
+            let g:vmt_list_indent_text = '  '
+            let g:vmt_link = 1
+            let g:vmt_min_level = 1
+            let g:vmt_max_level = 6
+            " :GenToc
+
+    "[todo]"
+        Plug 'nvim-lua/plenary.nvim'
+        Plug 'folke/todo-comments.nvim'
+
+    "[im]"
+
+        Plug 'ZSaberLv0/ZFVimIM'
+        Plug 'ZSaberLv0/ZFVimJob'
+            let g:ZFVimIM_key_pageUp = [',']
+            let g:ZFVimIM_key_pageDown = ['.']
+            let g:ZFVimIM_showKeyHint = 0
+            let g:ZFVimIM_cachePath = $HOME.'/.cache/zfvimim'
+
+            " init
+            function! s:zfvimim_init() abort
+                let db = ZFVimIM_dbInit({
+                            \   'name' : 'Pinyin',
+                            \   'editable' : 0,
+                            \ })
+                call ZFVimIM_cloudRegister({
+                            \   'mode' : 'local',
+                            \   'dbId' : db['dbId'],
+                            \   'repoPath' : expand('~/.local/share/nvim/zfvimim/ZFVimIM_pinyin_base/misc'),
+                            \   'dbFile' : 'pinyin.txt',
+                            \   'dbCountFile' : 'pinyin_count.txt',
+                            \ })
+            endfunction
+            if exists('*ZFVimIME_initFlag') && ZFVimIME_initFlag()
+                call s:zfvimim_init()
+            else
+                autocmd User ZFVimIM_event_OnDbInit call s:zfvimim_init()
+            endif
+
+            " add word checker
+            function! NopChecker(userWord)
+                return 0
+            endfunction
+            let g:ZFVimIM_autoAddWordChecker=[function('NopChecker')]
+
+            " key map
+            let g:ZFVimIM_keymap = 0
+            inoremap <expr><silent> <c-a> ZFVimIME_keymap_toggle_i()
+            nnoremap <expr><silent> <c-a> ZFVimIME_keymap_toggle_n()
+
+            " status
+            let g:ZFVimIME_IMEStatus_tagL = '['
+            let g:ZFVimIME_IMEStatus_tagR = ']'
+
+    "--------------------
+    " Language Server
+    "--------------------
+
+    "[jupyter]"
+
+        Plug 'luk400/vim-jukit'
+
+    "[rego]"
+
+        Plug 'tsandall/vim-rego'
+
+        Plug 'sbdchd/neoformat'
+            let g:neoformat_rego_opa = {
+                  \ 'exe': 'opa',
+                  \ 'args': ['fmt'],
+                  \ 'stdin': 1,
+                  \ }
+            let g:neoformat_enabled_rego = ['opa']
+            " augroup fmt
+            "   autocmd!
+            "   autocmd BufWritePre * undojoin | Neoformat
+            " augroup END
+
+    "[jinja]"
+
+        Plug 'Glench/Vim-Jinja2-Syntax'
+
+
+    "--------------------
+    " CoC
+    "--------------------
 
     "[CoC]"
 
@@ -366,196 +574,5 @@ call plug#begin()
             " nnoremap <silent><nowait> <space>k  :<C-u>CocPrev<CR>
             " Resume latest coc list
             " nnoremap <silent><nowait> <space>p  :<C-u>CocListResume<CR>
-
-    "[linter]"
-
-        Plug 'dense-analysis/ale'
-            source ~/.config/nvim/proto.vim
-
-            let g:ale_set_highlights = 0
-            let g:ale_set_quickfix = 1
-            let g:ale_sign_error = '✖'
-            let g:ale_sign_warning = 'ℹ'
-            let g:ale_statusline_format = ['✖ %d', 'ℹ %d', '✔ OK']
-            let g:ale_echo_msg_error_str = 'E'
-            let g:ale_echo_msg_warning_str = 'W'
-            let g:ale_echo_msg_format = '[%linter%] %s [%severity%]'
-            let g:ale_lint_on_enter = 1
-            let g:ale_fix_on_save = 1
-
-            nmap <Leader>ep <Plug>(ale_previous_wrap)
-            nmap <Leader>en <Plug>(ale_next_wrap)
-            nmap <Leader>et :ALEToggle<CR>
-            nmap <Leader>ed :ALEDetail<CR>
-            let g:ale_linters = {
-                \ 'go': ['go vet', 'go fmt'],
-                \ }
-            let g:ale_fixers = {
-                \   '*': ['remove_trailing_lines', 'trim_whitespace'],
-                \   'javascript': ['eslint'],
-                \}
-
-        Plug 'itspriddle/vim-shellcheck'
-
-    "[formater]"
-
-        " Vim tools for comment stuff out
-        Plug 'tpope/vim-commentary'
-
-        " Vim script for text filtering and alignment
-        Plug 'godlygeek/tabular'
-
-    "[ai]"
-
-        Plug 'Exafunction/codeium.vim', { 'branch': 'main' }
-            let g:codeium_no_map_tab = 1
-            imap <script><silent><nowait><expr> <C-g> codeium#Accept()
-            imap <C-;>   <Cmd>call codeium#CycleCompletions(1)<CR>
-            imap <C-,>   <Cmd>call codeium#CycleCompletions(-1)<CR>
-            imap <C-x>   <Cmd>call codeium#Clear()<CR>
-
-    "[jupyter]"
-
-        " Plug 'luk400/vim-jukit'
-
-    "[golang]"
-
-        Plug 'sebdah/vim-delve'
-            nmap <leader>B :DlvToggleBreakpoint<cr>
-            nmap <leader>T :DlvToggleTracepoint<cr>
-
-    "[git]"
-
-        Plug 'airblade/vim-gitgutter'
-            let g:gitgutter_max_signs = 500
-            " map key
-            let g:gitgutter_map_keys = 0
-            " colors
-            let g:gitgutter_override_sign_column_highlight = 0
-
-            nmap <leader>g <Plug>(GitGutterPreviewHunk)
-            nmap <leader><backspace> <Plug>(GitGutterUndoHunk)
-
-    "[rego]"
-
-        Plug 'tsandall/vim-rego'
-
-        Plug 'sbdchd/neoformat'
-            let g:neoformat_rego_opa = {
-                  \ 'exe': 'opa',
-                  \ 'args': ['fmt'],
-                  \ 'stdin': 1,
-                  \ }
-            let g:neoformat_enabled_rego = ['opa']
-            " augroup fmt
-            "   autocmd!
-            "   autocmd BufWritePre * undojoin | Neoformat
-            " augroup END
-
-    "[jinja]"
-
-        Plug 'Glench/Vim-Jinja2-Syntax'
-
-    "[markdown]"
-
-        Plug 'plasticboy/vim-markdown', { 'for': ['markdown'] }
-            let g:vim_markdown_folding_disabled = 1
-            let g:vim_markdown_toc_autofit = 1
-            let g:vim_markdown_follow_anchor = 1
-
-        Plug 'gitsang/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
-            let g:mkdp_auto_start = 0
-            let g:mkdp_auto_close = 1
-            let g:mkdp_refresh_slow = 0
-            let g:mkdp_command_for_global = 0
-            let g:mkdp_open_to_the_world = 1
-            let g:mkdp_open_ip = main_ip
-            let g:mkdp_port = '7777'
-            let g:mkdp_browser = default_browser
-            let g:mkdp_echo_preview_url = 1
-            let g:mkdp_browserfunc = ''
-            let g:mkdp_preview_options = {
-                \ 'mkit': {},
-                \ 'katex': {},
-                \ 'uml': {},
-                \ 'maid': {},
-                \ 'disable_sync_scroll': 0,
-                \ 'sync_scroll_type': 'middle',
-                \ 'hide_yaml_meta': 1,
-                \ 'sequence_diagrams': {},
-                \ 'flowchart_diagrams': {},
-                \ 'content_editable': v:false,
-                \ 'disable_filename': 0
-                \ }
-            let g:mkdp_markdown_css = ''
-            let g:mkdp_highlight_css = ''
-            let g:mkdp_page_title = '「${name}」'
-            let g:mkdp_filetypes = ['markdown']
-
-            nmap <leader>m <Plug>MarkdownPreviewToggle
-            nmap <F8> <Plug>MarkdownPreviewToggle
-
-        Plug 'mzlogin/vim-markdown-toc'
-            let g:vmt_auto_update_on_save = 1
-            let g:vmt_dont_insert_fence = 0
-            let g:vmt_fence_text = 'markdown-toc'
-            let g:vmt_fence_closing_text = '/markdown-toc'
-            let g:vmt_fence_hidden_markdown_style = ''
-            let g:vmt_cycle_list_item_markers = 0
-            let g:vmt_list_item_char = '-'
-            let g:vmt_include_headings_before = 0
-            let g:vmt_list_indent_text = '  '
-            let g:vmt_link = 1
-            let g:vmt_min_level = 1
-            let g:vmt_max_level = 6
-            " :GenToc
-
-    "[todo]"
-        Plug 'nvim-lua/plenary.nvim'
-        Plug 'folke/todo-comments.nvim'
-
-    "[im]"
-
-        Plug 'ZSaberLv0/ZFVimIM'
-        Plug 'ZSaberLv0/ZFVimJob'
-            let g:ZFVimIM_key_pageUp = [',']
-            let g:ZFVimIM_key_pageDown = ['.']
-            let g:ZFVimIM_showKeyHint = 0
-            let g:ZFVimIM_cachePath = $HOME.'/.cache/zfvimim'
-
-            " init
-            function! s:zfvimim_init() abort
-                let db = ZFVimIM_dbInit({
-                            \   'name' : 'Pinyin',
-                            \   'editable' : 0,
-                            \ })
-                call ZFVimIM_cloudRegister({
-                            \   'mode' : 'local',
-                            \   'dbId' : db['dbId'],
-                            \   'repoPath' : expand('~/.local/share/nvim/zfvimim/ZFVimIM_pinyin_base/misc'),
-                            \   'dbFile' : 'pinyin.txt',
-                            \   'dbCountFile' : 'pinyin_count.txt',
-                            \ })
-            endfunction
-            if exists('*ZFVimIME_initFlag') && ZFVimIME_initFlag()
-                call s:zfvimim_init()
-            else
-                autocmd User ZFVimIM_event_OnDbInit call s:zfvimim_init()
-            endif
-
-            " add word checker
-            function! NopChecker(userWord)
-                return 0
-            endfunction
-            let g:ZFVimIM_autoAddWordChecker=[function('NopChecker')]
-
-            " key map
-            let g:ZFVimIM_keymap = 0
-            inoremap <expr><silent> <c-a> ZFVimIME_keymap_toggle_i()
-            nnoremap <expr><silent> <c-a> ZFVimIME_keymap_toggle_n()
-
-            " status
-            let g:ZFVimIME_IMEStatus_tagL = '['
-            let g:ZFVimIME_IMEStatus_tagR = ']'
 
 call plug#end()
