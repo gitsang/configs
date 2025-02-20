@@ -19,12 +19,12 @@ if ! command -v go >/dev/null 2>&1 ; then
 fi
 
 if [[ ${#} == 0 ]]; then
-    mapfile -t OPTIONAL_VERSIONS < <(find "${HOME}/.go/bin" -type f -regex '.*\/go[0-9\.]*' -exec basename '{}' ';')
+    mapfile -t OPTIONAL_VERSIONS < <(find "${HOME}/.go/bin" -type f -regex '.*\/go[0-9\.]*' -exec basename '{}' ';' | sort | uniq)
 fi
 while getopts "r" opt; do
     case ${opt} in
         r)
-            mapfile -t OPTIONAL_VERSIONS < <(curl -sL https://golang.org/dl/ | grep -o 'go[0-9.]*\.linux-.*\.tar\.gz' | sed 's/\.linux-.*\.tar\.gz//g' | uniq)
+            mapfile -t OPTIONAL_VERSIONS < <(curl -sL https://golang.org/dl/ | grep -o 'go[0-9.]*\.linux-.*\.tar\.gz' | sed 's/\.linux-.*\.tar\.gz//g' | sort | uniq)
             ;;
         *)
             echo "Invalid option: -$OPTARG" >&2

@@ -1,0 +1,113 @@
+#!/bin/bash
+
+msg() { echo -e "\e[32m$1\e[0m"; }
+debug() { echo -e "\e[35m[DEBUG] $1\e[0m"; }
+info() { echo -e "\e[32m[INFO] $1\e[0m"; }
+warn() { echo -e "\e[33m[WARN] $1\e[0m"; }
+error() { echo -e "\e[31m[ERROR] $1\e[0m"; }
+
+check_dependencies() {
+    if ! command -v fzf &> /dev/null; then
+        echo "fzf is not installed"
+        exit 1
+    fi
+    if ! command -v kubectl &> /dev/null; then
+        echo "kubectl is not installed"
+        exit 1
+    fi
+    if ! command -v jq &> /dev/null; then
+        echo "jq is not installed"
+        exit 1
+    fi
+}
+
+KUBECTL_CFG_DIR="${HOME}/.kube/kubectl.config.d"
+
+# ========== kubeconfig ========== #
+
+KUBECTL_CFG_FILE_KUBECONFIG="${KUBECTL_CFG_DIR}/kubeconfig"
+KUBECONFIG_BASE_DIR="${HOME}/.kube"
+kubeconfig_available() {
+    if [ ! -f "${KUBECTL_CFG_FILE_KUBECONFIG}" ]; then
+        echo false; return
+    fi
+    if [ -z "$(cat "${KUBECTL_CFG_FILE_KUBECONFIG}")" ]; then
+        echo false; return
+    fi
+    if [ ! -f "$(cat "${KUBECTL_CFG_FILE_KUBECONFIG}")" ]; then
+        echo false; return
+    fi
+    echo true
+}
+kubeconfig_change() {
+    mapfile -t OPTIONAL_CONFIG < <(find "${KUBECONFIG_BASE_DIR}" -type f -regex '.*\.config' -exec basename '{}' ';')
+    SELECTED_CONFIG=$(printf "%s\n" "${OPTIONAL_CONFIG[@]}" | fzf --height 40% --layout reverse)
+    SELECTED_CONFIG="${KUBECONFIG_BASE_DIR}/${SELECTED_CONFIG}"
+    echo "${SELECTED_CONFIG}" > "${KUBECTL_CFG_FILE_KUBECONFIG}"
+}
+kubeconfig_set() {
+    if [[ $(kubeconfig_available) != "true" ]]; then
+        kubeconfig_change
+    fi
+
+    KUBECONFIG=$(cat "${KUBECTL_CFG_FILE_KUBECONFIG}")
+    export KUBECONFIG="${KUBECONFIG}"
+}
+
+# ========== namespace ========== #
+
+KUBECTL_CFG_FILE_NAMESPACE="${KUBECTL_CFG_DIR}/namespace"
+kube_namespace_available() {
+    if [ ! -f "${KUBECTL_CFG_FILE_NAMESPACE}" ]; then
+        echo false; return
+    fi
+    if [ -z "$(cat "${KUBECTL_CFG_FILE_NAMESPACE}")" ]; then
+        echo false; return
+    fi
+    echo true
+}
+kube_namespace_change() {
+    mapfile -t OPTIONAL_NAMESPACE < <(k get namespaces | grep -v "NAME" | grep -v "KUBE")
+    SELECTED_NAMESPACE=$(printf "%s\n" "${OPTIONAL_NAMESPACE[@]}" | fzf --height 40% --layout reverse)
+    SELECTED_NAMESPACE=$(echo "${SELECTED_NAMESPACE}" | awk '{print $1}')
+    echo "${SELECTED_NAMESPACE}" > "${KUBECTL_CFG_FILE_NAMESPACE}"
+}
+kube_namespace_set() {
+    if [[ $(kube_namespace_available) != "true" ]]; then
+        return
+    fi
+
+    KUBE_NAMESPACE=$(cat "${KUBECTL_CFG_FILE_NAMESPACE}")
+    KUBECTL_ARGS="${KUBECTL_ARGS} --namespace=${KUBE_NAMESPACE}"
+}
+
+# ========== message ========== #
+
+message() {
+    msg "KUBECONFIG=${KUBECONFIG}"
+    msg "KUBE_NAMESPACE=${KUBE_NAMESPACE}"
+}
+
+# ========== main ========== #
+
+
+check_dependencies
+mkdir -p "${KUBECTL_CFG_DIR}"
+
+case "${1}" in
+    c|config)
+        kubeconfig_change
+        ;;
+    n|namespace)
+        kube_namespace_change
+        ;;
+    *)
+        kubeconfig_set
+        kube_namespace_set
+        message
+
+        # shellcheck disable=SC2086
+        # shellcheck disable=SC2068
+        kubectl ${KUBECTL_ARGS} ${@}
+        ;;
+esac
