@@ -1,6 +1,10 @@
 {
   "suggest.noselect": true,
   "suggest.enablePreselect": false,
+  "diagnostic": {
+    "displayByAle": true,
+    "enable": true
+  },
   "[py][python][go][golang][rust][lua][js][javascript][markdown]": {
     "coc.preferences.formatOnSave": true,
     "coc.preferences.formatOnType": true
@@ -15,6 +19,7 @@
   "go.goplsEnv": {
     "GOFLAGS": "-tags=cff"
   },
+  "vimlsp.diagnostic.enable": true,
   "vetur.trace.server": "verbose",
   "prettier.trailingComma": "es5",
   "prettier.semi": false,

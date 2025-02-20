@@ -8,24 +8,13 @@
 " Magenta(LightMagenta)、Yellow(LightYellow)、White
 " PrintColor: curl -s https://gist.githubusercontent.com/HaleTom/89ffe32783f89f403bba96bd7bcd1263/raw/ | bash
 
+colorscheme desert
+
 " pop up
 hi Pmenu      ctermfg=223 ctermbg=239 guifg=#ebdbb2 guibg=#504945
 hi PmenuSel   cterm=bold ctermfg=239 ctermbg=109 gui=bold guifg=#504945 guibg=#83a598
 hi PmenuSbar  ctermbg=239 guibg=#504945
 hi PmenuThumb ctermbg=243 guibg=#7c6f64
-
-" coc plugin
-hi FgCocErrorFloatBgCocFloating cterm=reverse ctermfg=15 ctermbg=160
-hi CocErrorHighlight            ctermfg=White ctermbg=Red
-hi CocWarningHighlight          ctermfg=Black ctermbg=Yellow
-hi CocInfoHighlight             ctermfg=108
-
-" git gutter plugin
-highlight clear SignColumn
-highlight GitGutterAdd ctermfg=2
-highlight GitGutterChange ctermfg=3
-highlight GitGutterDelete ctermfg=1
-highlight GitGutterChangeDelete ctermfg=4
 
 " list char
 set nolist
@@ -67,6 +56,17 @@ hi mkdCode          ctermfg=244
 hi Title            ctermfg=226 gui=bold guifg=gold
 hi htmlStatement    ctermfg=180
 
+" git gutter plugin
+highlight clear SignColumn
+highlight GitGutterAdd ctermfg=2
+highlight GitGutterChange ctermfg=3
+highlight GitGutterDelete ctermfg=1
+highlight GitGutterChangeDelete ctermfg=4
+
 " coc
-hi CocInlayHintType      ctermfg=100
-hi CocInlayHintParameter ctermfg=100
+" hi FgCocErrorFloatBgCocFloating cterm=reverse ctermfg=15 ctermbg=160
+" hi CocErrorHighlight            ctermfg=White ctermbg=Red
+" hi CocWarningHighlight          ctermfg=Black ctermbg=Yellow
+" hi CocInfoHighlight             ctermfg=108
+" hi CocInlayHintType      ctermfg=100
+" hi CocInlayHintParameter ctermfg=100

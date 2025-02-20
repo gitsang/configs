@@ -70,6 +70,15 @@ endfunction
 " Golang
 "--------------------
 
+:command -range GoPbImplFix <line1>,<line2> call GoPbImplFix()
+function! GoPbImplFix(...) range
+    execute a:firstline ',' a:lastline 'substitute /Unimplemented\([A-Za-z]*Service\)Server/s *\1/g'
+    execute a:firstline ',' a:lastline 'substitute /\(context.Context\)/ctx \1/g'
+    execute a:firstline ',' a:lastline 'substitute /\*\([A-Za-z]*Request\)/req *api.\1/g'
+    execute a:firstline ',' a:lastline 'substitute /\*\([A-Za-z]*Reply\)/*api.\1/g'
+    execute a:firstline ',' a:lastline 'substitute /(\*\([0-9A-Za-z]*\),/(*api.\1,/'
+endfunction
+
 :command -nargs=* GoTest call GoTest(<f-args>)
 function! GoTest(...)
     let cmds = ['AsyncRun']
@@ -224,6 +233,34 @@ function! PyRun(...)
         execute 'AsyncRun -mode=term -focus=0 -rows=10 python3 .'
     endif
 endfunction
+
+"--------------------
+" Protobuf
+"--------------------
+
+function! s:IsValidProtoLine(line)
+    return a:line =~ '^\s*\(\s*[0-9A-Za-z-_\.]*\)\+=\s*[0-9]\+'
+endfunction
+
+function! s:IncrementNumber(line)
+    return substitute(a:line, '= *[0-9]\+', '= ' . s:current_number, '')
+endfunction
+
+function! Numbering() range
+    let s:current_number = 1
+    let l:save_cursor = getcurpos()
+    for l:linenum in range(a:firstline, a:lastline)
+        let l:line = getline(l:linenum)
+        if s:IsValidProtoLine(l:line)
+            let l:new_line = s:IncrementNumber(l:line)
+            call setline(l:linenum, l:new_line)
+            let s:current_number += 1
+        endif
+    endfor
+    call setpos('.', l:save_cursor)
+endfunction
+
+command! -range Numbering <line1>,<line2>call Numbering()
 
 "--------------------
 " Print

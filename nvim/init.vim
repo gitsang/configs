@@ -8,6 +8,7 @@ source ~/.config/nvim/config.vim
 " Basic
 "--------------------
 
+" colorscheme default
 let mapleader=" "
 " set pastetoggle=<F12>
 nnoremap <F12> :set paste!<CR>
@@ -109,3 +110,9 @@ source ~/.config/nvim/keymap.vim
 "--------------------
 
 source ~/.config/nvim/highlight.vim
+
+"--------------------
+" Lua
+"--------------------
+
+source ~/.config/nvim/lua.vim

@@ -34,7 +34,10 @@ call plug#begin()
 
     "[color]"
 
+        Plug 'notpratheek/vim-luna'
+
         Plug 'morhetz/gruvbox'
+            let g:gruvbox_termcolors=256
 
     "[airline]"
 
@@ -67,11 +70,11 @@ call plug#begin()
             let g:airline#extensions#branch#vcs_priority = ["git", "mercurial"]
 
             " section
-            function! AirlineInit()
-                let g:airline_section_a = airline#section#create_left(['mode', '%{ZFVimIME_IMEStatusline()}'])
-                let g:airline_section_b = airline#section#create_left(['%{strftime("%H:%M:%S")}'])
-            endfunction
-            autocmd User AirlineAfterInit call AirlineInit()
+            " function! AirlineInit()
+            "     let g:airline_section_a = airline#section#create_left(['mode', '%{ZFVimIME_IMEStatusline()}'])
+            "     let g:airline_section_b = airline#section#create_left(['%{strftime("%H:%M:%S")}'])
+            " endfunction
+            " autocmd User AirlineAfterInit call AirlineInit()
 
             nmap <leader>1 <Plug>AirlineSelectTab1
             nmap <leader>2 <Plug>AirlineSelectTab2
@@ -87,7 +90,7 @@ call plug#begin()
             nmap <leader>` :bdelete<cr>
 
         Plug 'vim-airline/vim-airline-themes'
-            let g:airline_theme='luna'
+            let g:airline_theme='zenburn'
 
     "--------------------
     " SideBar
@@ -118,37 +121,11 @@ call plug#begin()
     "[tagbar]"
 
         Plug 'majutsushi/tagbar', { 'on': 'TagbarToggle' }
-            let g:tagbar_type_go = {
-                    \ 'ctagstype' : 'go',
-                    \ 'kinds'     : [
-                        \ 'p:package',
-                        \ 'i:imports:1',
-                        \ 'c:constants',
-                        \ 'v:variables',
-                        \ 't:types',
-                        \ 'n:interfaces',
-                        \ 'w:fields',
-                        \ 'e:embedded',
-                        \ 'm:methods',
-                        \ 'r:constructor',
-                        \ 'f:functions'
-                    \ ],
-                    \ 'sro' : '.',
-                    \ 'kind2scope' : {
-                        \ 't' : 'ctype',
-                        \ 'n' : 'ntype'
-                    \ },
-                    \ 'scope2kind' : {
-                        \ 'ctype' : 't',
-                        \ 'ntype' : 'n'
-                    \ },
-                    \ 'ctagsbin'  : 'gotags',
-                    \ 'ctagsargs' : '-sort -silent',
-                    \ 'sort' : 0
-                \ }
+            " For golang: `go install github.com/jstemmer/gotags@latest`
+            "   - Ref: https://github.com/preservim/tagbar/pull/580
+            nmap <leader>y :TagbarToggle<cr>
             set tags=tags;
             set autochdir
-            nmap <leader>y :TagbarToggle<cr>
 
         Plug 'lvht/tagbar-markdown'
             let g:tagbar_sort = 0
@@ -160,7 +137,7 @@ call plug#begin()
     "[easymotion]"
 
         Plug 'easymotion/vim-easymotion'
-        nmap ss <Plug>(easymotion-s2)
+            nmap ss <Plug>(easymotion-s2)
 
     "[diff]"
 
@@ -183,6 +160,27 @@ call plug#begin()
             tnoremap <silent> <F10>[     <C-\><C-n>:FloatermPrev<CR>
             nnoremap <silent> <F10>]     :FloatermNext<CR>
             tnoremap <silent> <F10>]     <C-\><C-n>:FloatermNext<CR>
+
+    "[fzf]"
+
+        Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+
+        Plug 'junegunn/fzf.vim'
+            " use ripgrep to search for files
+                let $FZF_DEFAULT_COMMAND = 'rg -l ""'
+
+                command! -bang -nargs=* RgExact
+                  \ call fzf#vim#grep(
+                  \   'rg -F --column --line-number --no-heading --color=always --smart-case -- '.shellescape(<q-args>), 1,
+                  \   fzf#vim#with_preview(), <bang>0)
+
+                map <C-p> :Files<CR>
+                map <C-b> :Buffers<CR>
+                map <Leader><Leader> :Commands<CR>
+                map <Leader>/ :execute 'Rg ' . input('Rg/')<CR>
+                map <Leader>l :BLines<CR>
+                map <Leader>gf :GF?<CR>
+                nmap <Leader>G :execute 'RgExact ' . expand('<cword>') <Cr>
 
     "--------------------
     " Coding Support
@@ -211,14 +209,32 @@ call plug#begin()
             nmap <Leader>et :ALEToggle<CR>
             nmap <Leader>ed :ALEDetail<CR>
             let g:ale_linters = {
-                \ 'go': ['go vet', 'go fmt', 'golint', 'gosimple'],
+                \   'go': ['go vet', 'go fmt', 'golint', 'gosimple'],
+                \   'sh': ['shellcheck'],
                 \ }
             let g:ale_fixers = {
                 \   '*': ['remove_trailing_lines', 'trim_whitespace'],
                 \   'javascript': ['eslint'],
-                \}
+                \ }
+            let g:ale_lint_ignore = {
+                \   'proto': ['PACKAGE_VERSION_SUFFIX'],
+                \ }
 
-        Plug 'itspriddle/vim-shellcheck'
+            let g:ale_set_quickfix = 1
+            let g:ale_lint_on_enter = 1
+            let g:ale_fix_on_save = 1
+            let g:ale_disable_lsp = 'auto'
+
+            let g:ale_set_highlights = 0
+            let g:ale_sign_error = '✖'
+            let g:ale_sign_warning = 'ℹ'
+            let g:ale_sign_column_always = 1
+            let g:ale_statusline_format = ['✖ %d', 'ℹ %d', '✔ OK']
+            let g:ale_echo_msg_error_str = 'E'
+            let g:ale_echo_msg_warning_str = 'W'
+            let g:ale_echo_msg_format = '[%linter%](%code%) %s [%severity%]'
+
+            let g:ale_sh_shellcheck_options = '--format=gcc'
 
     "[formater]"
 
@@ -228,7 +244,7 @@ call plug#begin()
         " Vim script for text filtering and alignment
         Plug 'godlygeek/tabular'
 
-    "[ai]"
+    "[codium]"
 
         Plug 'Exafunction/codeium.vim', { 'branch': 'main' }
             let g:codeium_no_map_tab = 1
@@ -236,6 +252,21 @@ call plug#begin()
             imap <C-;>   <Cmd>call codeium#CycleCompletions(1)<CR>
             imap <C-,>   <Cmd>call codeium#CycleCompletions(-1)<CR>
             imap <C-x>   <Cmd>call codeium#Clear()<CR>
+
+    "[avante]"
+
+        " Deps
+        Plug 'stevearc/dressing.nvim'
+        Plug 'nvim-lua/plenary.nvim'
+        Plug 'MunifTanjim/nui.nvim'
+        Plug 'MeanderingProgrammer/render-markdown.nvim'
+        " Optional deps
+        Plug 'hrsh7th/nvim-cmp'
+        Plug 'nvim-tree/nvim-web-devicons' "or Plug 'echasnovski/mini.icons'
+        Plug 'HakonHarnes/img-clip.nvim'
+        Plug 'zbirenbaum/copilot.lua'
+        " Yay, pass source=true if you want to build from source
+        Plug 'yetone/avante.nvim', { 'branch': 'main', 'do': 'make' }
 
     "[debug]"
 
@@ -310,6 +341,7 @@ call plug#begin()
             " :GenToc
 
     "[todo]"
+
         Plug 'nvim-lua/plenary.nvim'
         Plug 'folke/todo-comments.nvim'
 
@@ -363,7 +395,7 @@ call plug#begin()
 
     "[jupyter]"
 
-        Plug 'luk400/vim-jukit'
+        " Plug 'luk400/vim-jukit'
 
     "[rego]"
 
