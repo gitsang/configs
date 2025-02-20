@@ -101,6 +101,14 @@ case "${1}" in
     n|namespace)
         kube_namespace_change
         ;;
+    h|help)
+        echo "Usage: k [options]"
+        echo ""
+        echo "Options:"
+        echo "    c|config"
+        echo "    n|namespace"
+        echo "    h|help"
+        ;;
     *)
         kubeconfig_set
         kube_namespace_set
