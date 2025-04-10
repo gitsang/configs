@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# shellcheck source=/dev/null
+source "${HOME}/.local/etc/debugc.conf"
+
+DEBUG_CONTAINER_ID=${1}
+DEBUG_CONTAINER_IMAGE=${DEBUG_CONTAINER_IMAGE:-debian:latest}
+
+docker run -it --rm \
+	--name "debug-$(tr -dc 'a-z0-9' </dev/urandom | fold -w 8 | head -n 1)" \
+	--pid "container:${DEBUG_CONTAINER_ID}" \
+	--network "container:${DEBUG_CONTAINER_ID}" \
+	--volumes-from "${DEBUG_CONTAINER_ID}" \
+	"${DEBUG_CONTAINER_IMAGE}"
