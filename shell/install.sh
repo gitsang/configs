@@ -3,20 +3,19 @@
 # Function to display usage information
 show_usage() {
 	echo "Usage: $0 [-u] [-y]"
-	echo "  -u    Force update all files, even if they exist in the destination"
+	echo "  -u    Update existing files in the destination"
 	echo "  -y    Automatic yes to all prompts (with -u)"
-	echo "  Default: only copy files that don't exist in the destination"
 }
 
 # Default settings
-force_update=0
+update_mode=0
 auto_confirm=0
 
 # Parse command line options
 while getopts "uy" opt; do
 	case $opt in
 	u)
-		force_update=1
+		update_mode=1
 		;;
 	y)
 		auto_confirm=1
@@ -47,7 +46,7 @@ copy_files() {
 	fi
 
 	# Get list of files to update
-	if [ $force_update -eq 1 ] && [ $auto_confirm -eq 0 ]; then
+	if [ $update_mode -eq 1 ] && [ $auto_confirm -eq 0 ]; then
 		# Interactive update mode
 		for file in "$src_dir"/*; do
 			if [ -f "$file" ]; then
@@ -73,7 +72,7 @@ copy_files() {
 		done
 	else
 		# Set rsync options based on update mode
-		if [ $force_update -eq 1 ]; then
+		if [ $update_mode -eq 1 ]; then
 			# With -u -y, update all files automatically
 			echo "Force updating all $file_type..."
 			rsync_opts="-avPh"
@@ -84,12 +83,12 @@ copy_files() {
 		fi
 
 		# Perform the rsync operation
-		rsync ${rsync_opts} "$src_dir"/* "$dest_dir"/
+		rsync "${rsync_opts}" "$src_dir"/* "$dest_dir"/
 	fi
 }
 
 # Display current mode
-if [ $force_update -eq 1 ]; then
+if [ $update_mode -eq 1 ]; then
 	if [ $auto_confirm -eq 1 ]; then
 		echo "Mode: Force update all files with automatic confirmation"
 	else
