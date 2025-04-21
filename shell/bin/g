@@ -1,0 +1,163 @@
+#!/bin/bash
+# Git wrapper script that implements common git commands
+
+# shellcheck source=/dev/null
+source "${HOME}/.local/etc/g.conf"
+
+# Display help information
+show_help() {
+	echo "Usage: ./g <command> [arguments]"
+	echo ""
+	echo "Commands:"
+	echo "  s       - git status"
+	echo "  l       - git lg"
+	echo "  lg      - git log"
+	echo "  ls      - git log --stat"
+	echo "  lp      - git log -p"
+	echo "  a       - git add"
+	echo "  aa      - git add --all ."
+	echo "  cm      - git commit -m"
+	echo "  ps      - git push"
+	echo "  pl      - git pull"
+	echo "  f       - git fetch"
+	echo "  t       - list tags sorted by date"
+	echo "  d       - git diff"
+	echo "  dt      - git difftool"
+	echo "  b       - git branch"
+	echo "  bc      - interactively checkout a branch"
+	echo "  tps     - create and push a tag"
+	echo "  au      - add, commit using AI, and push"
+	echo "  rb      - interactive rebase"
+}
+
+# Git branch checkout with fzf
+git_branch_checkout() {
+	branch=$(git branch "$@" | sort -r | cut -c 3- | fzf --height 40% --layout reverse)
+	if [ -n "${branch}" ]; then
+		git checkout "${branch}"
+	fi
+}
+
+# Create and push a tag
+git_tag_push() {
+	TAG=${1}
+	if [ -z "$TAG" ]; then
+		echo "Error: Tag name is required"
+		return 1
+	fi
+	git tag "${TAG}"
+	git push origin "${TAG}"
+}
+
+# Add, AI commit, and push
+git_add_and_commit() {
+	pushd "$(git rev-parse --show-toplevel)" || exit
+	git add --all .
+	branch=$(git branch | grep "\*" | awk '{print $NF}')
+	# go install github.com/coder/aicommit/cmd/aicommit@main
+	aicommit \
+		--openai-base-url "${AICOMMIT_API_URL}" \
+		--openai-key "${AICOMMIT_API_KEY}" \
+		--model "${AICOMMIT_MODEL}"
+	git push origin "${branch}"
+	popd || exit
+}
+
+# Interactive rebase
+git_rebase() {
+	if [ -z "$1" ]; then
+		echo "Error: Number of commits or commit hash required"
+		return 1
+	fi
+
+	if [ ${#1} -gt 3 ]; then
+		git rebase -i "${1}"
+	else
+		git rebase -i "HEAD~${1}"
+	fi
+}
+
+# Main command dispatcher
+case "$1" in
+s)
+	git status
+	;;
+l)
+	git lg
+	;;
+lg)
+	git log
+	;;
+ls)
+	git log --stat
+	;;
+lp)
+	git log -p
+	;;
+a)
+	shift
+	git add "$@"
+	;;
+aa)
+	git add --all .
+	;;
+cm)
+	shift
+	if [ -z "$1" ]; then
+		echo "Error: Commit message is required"
+		exit 1
+	fi
+	git commit -m "$*"
+	;;
+ps)
+	git push
+	;;
+pl)
+	git pull
+	;;
+f)
+	git fetch
+	;;
+t)
+	git for-each-ref --sort=creatordate --format "%(creatordate): %(refname)" refs/tags
+	;;
+d)
+	shift
+	git diff "$@"
+	;;
+dt)
+	shift
+	git difftool "$@"
+	;;
+b)
+	shift
+	git branch "$@"
+	;;
+bc)
+	shift
+	git_branch_checkout "$@"
+	;;
+tps)
+	shift
+	git_tag_push "$@"
+	;;
+au)
+	git_add_and_commit
+	;;
+rb)
+	shift
+	git_rebase "$@"
+	;;
+help | --help | -h)
+	show_help
+	;;
+*)
+	if [ -z "$1" ]; then
+		git status # Default to git status if no command provided
+	else
+		echo "Unknown command: $1"
+		show_help
+		exit 1
+	fi
+	;;
+esac
