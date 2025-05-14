@@ -159,6 +159,12 @@ if [[ ${plugin_loaded} != "true" ]]; then
     fi
     source ~/.zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
+    if [[ ! -d ~/.zsh/plugins/zsh_codex ]]; then
+      git clone https://github.com/tom-doerr/zsh_codex.git ~/.zsh/plugins/zsh_codex
+    fi
+    source ~/.zsh/plugins/zsh_codex/zsh_codex.plugin.zsh
+    bindkey '^X' create_completion
+
     plugin_loaded="true"
 fi
 

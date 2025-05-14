@@ -42,7 +42,7 @@ export GOPRIVATE='gitlab.home.c8g.top'
 #export GOCACHE=off
 
 # rust
-# shellcheck disable=SC1090
+# shellcheck disable=SC1090,SC1091
 source "$HOME/.cargo/env"
 
 # node
@@ -57,8 +57,8 @@ export PATH=$PATH:$LibreOffice_PATH
 
 # term
 #export TERM=xterm
-#export TERM=xterm-256color
-export TERM=screen-256color-bce
+export TERM=xterm-256color
+#export TERM=screen-256color-bce
 export HISTSIZE=1000000
 
 # podman
@@ -137,9 +137,6 @@ dive() {
     wagoodman/dive:latest \
     "$@"
 }
-
-# k8s
-alias k='kubectl'
 
 # podman
 alias p='podman'
