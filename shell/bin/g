@@ -6,158 +6,207 @@ source "${HOME}/.local/etc/g.conf"
 
 # Display help information
 show_help() {
-	echo "Usage: ./g <command> [arguments]"
-	echo ""
-	echo "Commands:"
-	echo "  s       - git status"
-	echo "  l       - git lg"
-	echo "  lg      - git log"
-	echo "  ls      - git log --stat"
-	echo "  lp      - git log -p"
-	echo "  a       - git add"
-	echo "  aa      - git add --all ."
-	echo "  cm      - git commit -m"
-	echo "  ps      - git push"
-	echo "  pl      - git pull"
-	echo "  f       - git fetch"
-	echo "  t       - list tags sorted by date"
-	echo "  d       - git diff"
-	echo "  dt      - git difftool"
-	echo "  b       - git branch"
-	echo "  bc      - interactively checkout a branch"
-	echo "  tps     - create and push a tag"
-	echo "  au      - add, commit using AI, and push"
-	echo "  rb      - interactive rebase"
+  echo "Usage: ./g <command> [arguments]"
+  echo ""
+  echo "Commands:"
+  echo "  s       - git status"
+  echo "  l       - git lg"
+  echo "  lg      - git log"
+  echo "  ls      - git log --stat"
+  echo "  lp      - git log -p"
+  echo "  a       - git add"
+  echo "  aa      - git add --all ."
+  echo "  cm      - git commit -m"
+  echo "  ps      - git push"
+  echo "  pl      - git pull"
+  echo "  f       - git fetch"
+  echo "  t       - list tags sorted by date"
+  echo "  d       - git diff"
+  echo "  dt      - git difftool"
+  echo "  b       - git branch"
+  echo "  bc      - interactively checkout a branch"
+  echo "  tps     - create and push a tag"
+  echo "  au      - add, commit using AI, and push"
+  echo "  rb      - interactive rebase"
 }
 
 # Git branch checkout with fzf
 git_branch_checkout() {
-	branch=$(git branch "$@" | sort -r | cut -c 3- | fzf --height 40% --layout reverse)
-	if [ -n "${branch}" ]; then
-		git checkout "${branch}"
-	fi
+  branch=$(git branch "$@" | sort -r | cut -c 3- | fzf --height 40% --layout reverse)
+  if [ -n "${branch}" ]; then
+    git checkout "${branch}"
+  fi
 }
 
 # Create and push a tag
 git_tag_push() {
-	TAG=${1}
-	if [ -z "$TAG" ]; then
-		echo "Error: Tag name is required"
-		return 1
-	fi
-	git tag "${TAG}"
-	git push origin "${TAG}"
+  TAG=${1}
+  if [ -z "$TAG" ]; then
+    echo "Error: Tag name is required"
+    return 1
+  fi
+  git tag "${TAG}"
+  git push origin "${TAG}"
 }
 
 # Add, AI commit, and push
 git_add_and_commit() {
-	pushd "$(git rev-parse --show-toplevel)" || exit
-	git add --all .
-	branch=$(git branch | grep "\*" | awk '{print $NF}')
-	# go install github.com/coder/aicommit/cmd/aicommit@main
-	aicommit \
-		--openai-base-url "${AICOMMIT_API_URL}" \
-		--openai-key "${AICOMMIT_API_KEY}" \
-		--model "${AICOMMIT_MODEL}"
-	git push origin "${branch}"
-	popd || exit
+  pushd "$(git rev-parse --show-toplevel)" || exit
+  git add --all .
+  branch=$(git branch | grep "\*" | awk '{print $NF}')
+  # go install github.com/coder/aicommit/cmd/aicommit@main
+  aicommit \
+    --openai-base-url "${AICOMMIT_API_URL}" \
+    --openai-key "${AICOMMIT_API_KEY}" \
+    --model "${AICOMMIT_MODEL}"
+  git push origin "${branch}"
+  popd || exit
 }
 
 # Interactive rebase
 git_rebase() {
-	if [ -z "$1" ]; then
-		echo "Error: Number of commits or commit hash required"
-		return 1
-	fi
+  if [ -z "$1" ]; then
+    echo "Error: Number of commits or commit hash required"
+    return 1
+  fi
 
-	if [ ${#1} -gt 3 ]; then
-		git rebase -i "${1}"
-	else
-		git rebase -i "HEAD~${1}"
-	fi
+  if [ ${#1} -gt 3 ]; then
+    git rebase -i "${1}"
+  else
+    git rebase -i "HEAD~${1}"
+  fi
+}
+
+# Install aliases for g commands
+install_aliases() {
+  local ALIAS_FILE="${HOME}/.local/etc/g.alias"
+  local ZSHRC_FILE="${HOME}/.zshrc"
+
+  # Ensure directory exists
+  mkdir -p "$(dirname "${ALIAS_FILE}")"
+
+  # Create aliases file
+  cat >"${ALIAS_FILE}" <<'EOF'
+# g command aliases
+alias gs="g s"
+alias gl="g l"
+alias glg="g lg"
+alias gls="g ls"
+alias glp="g lp"
+alias ga="g a"
+alias gaa="g aa"
+alias gcm="g cm"
+alias gps="g ps"
+alias gpl="g pl"
+alias gf="g f"
+alias gt="g t"
+alias gd="g d"
+alias gdt="g dt"
+alias gb="g b"
+alias gbc="g bc"
+alias gtps="g tps"
+alias gau="g au"
+alias grb="g rb"
+EOF
+
+  echo "Alias file created at ${ALIAS_FILE}"
+
+  # Check if source line already exists in .zshrc
+  if ! grep -q "source ${ALIAS_FILE}" "${ZSHRC_FILE}" 2>/dev/null; then
+    echo "# g command aliases" >>"${ZSHRC_FILE}"
+    echo "source ${ALIAS_FILE}" >>"${ZSHRC_FILE}"
+    echo "Added source line to ${ZSHRC_FILE}"
+  else
+    echo "Source line already exists in ${ZSHRC_FILE}"
+  fi
+
+  echo "Installation complete. Please restart your shell or run 'source ${ZSHRC_FILE}' to apply changes"
 }
 
 # Main command dispatcher
 case "$1" in
 s)
-	git status
-	;;
+  git status
+  ;;
 l)
-	git lg
-	;;
+  git lg
+  ;;
 lg)
-	git log
-	;;
+  git log
+  ;;
 ls)
-	git log --stat
-	;;
+  git log --stat
+  ;;
 lp)
-	git log -p
-	;;
+  git log -p
+  ;;
 a)
-	shift
-	git add "$@"
-	;;
+  shift
+  git add "$@"
+  ;;
 aa)
-	git add --all .
-	;;
+  git add --all .
+  ;;
 cm)
-	shift
-	if [ -z "$1" ]; then
-		echo "Error: Commit message is required"
-		exit 1
-	fi
-	git commit -m "$*"
-	;;
+  shift
+  if [ -z "$1" ]; then
+    echo "Error: Commit message is required"
+    exit 1
+  fi
+  git commit -m "$*"
+  ;;
 ps)
-	git push
-	;;
+  git push
+  ;;
 pl)
-	git pull
-	;;
+  git pull
+  ;;
 f)
-	git fetch
-	;;
+  git fetch
+  ;;
 t)
-	git for-each-ref --sort=creatordate --format "%(creatordate): %(refname)" refs/tags
-	;;
+  git for-each-ref --sort=creatordate --format "%(creatordate): %(refname)" refs/tags
+  ;;
 d)
-	shift
-	git diff "$@"
-	;;
+  shift
+  git diff "$@"
+  ;;
 dt)
-	shift
-	git difftool "$@"
-	;;
+  shift
+  git difftool "$@"
+  ;;
 b)
-	shift
-	git branch "$@"
-	;;
+  shift
+  git branch "$@"
+  ;;
 bc)
-	shift
-	git_branch_checkout "$@"
-	;;
+  shift
+  git_branch_checkout "$@"
+  ;;
 tps)
-	shift
-	git_tag_push "$@"
-	;;
+  shift
+  git_tag_push "$@"
+  ;;
 au)
-	git_add_and_commit
-	;;
+  git_add_and_commit
+  ;;
 rb)
-	shift
-	git_rebase "$@"
-	;;
+  shift
+  git_rebase "$@"
+  ;;
+install)
+  install_aliases
+  ;;
 help | --help | -h)
-	show_help
-	;;
+  show_help
+  ;;
 *)
-	if [ -z "$1" ]; then
-		git status # Default to git status if no command provided
-	else
-		echo "Unknown command: $1"
-		show_help
-		exit 1
-	fi
-	;;
+  if [ -z "$1" ]; then
+    git status # Default to git status if no command provided
+  else
+    echo "Unknown command: $1"
+    show_help
+    exit 1
+  fi
+  ;;
 esac
