@@ -131,10 +131,6 @@ rprompt() {
 PROMPT='$(prompt)'
 RPROMPT='$(rprompt)'
 
-# =============== fzf =============== #
-
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-
 # =============== plugin =============== #
 
 if [[ ${plugin_loaded} != "true" ]]; then
@@ -144,26 +140,33 @@ if [[ ${plugin_loaded} != "true" ]]; then
     fpath=(~/.zsh/completion $fpath)
     autoload -Uz compinit && compinit -i
 
+    start_time=$(date +%s)
     if [[ ! -d ~/.zsh/plugins/fzf-tab ]]; then
         git clone https://github.com/Aloxaf/fzf-tab ~/.zsh/plugins/fzf-tab
     fi
     source ~/.zsh/plugins/fzf-tab/fzf-tab.plugin.zsh
+    echo "fzf-tab loaded in $(($(date +%s)-${start_time}))s"
 
+    start_time=$(date +%s)
     if [[ ! -d ~/.zsh/plugins/zsh-autosuggestions ]]; then
         git clone https://github.com/zsh-users/zsh-autosuggestions ~/.zsh/plugins/zsh-autosuggestions
     fi
     source ~/.zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+    echo "zsh-autosuggestions loaded in $(($(date +%s)-${start_time}))s"
 
     if [[ ! -d ~/.zsh/plugins/zsh-syntax-highlighting ]]; then
         git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.zsh/plugins/zsh-syntax-highlighting
     fi
     source ~/.zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+    echo "zsh-syntax-highlighting loaded in $(($(date +%s)-${start_time}))s"
 
+    start_time=$(date +%s)
     if [[ ! -d ~/.zsh/plugins/zsh_codex ]]; then
       git clone https://github.com/tom-doerr/zsh_codex.git ~/.zsh/plugins/zsh_codex
     fi
     source ~/.zsh/plugins/zsh_codex/zsh_codex.plugin.zsh
     bindkey '^X' create_completion
+    echo "zsh_codex loaded in $(($(date +%s)-${start_time}))s"
 
     plugin_loaded="true"
 fi
@@ -188,17 +191,7 @@ set-window-title() {
 set-window-title
 add-zsh-hook precmd set-window-title
 
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/home/debian/miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
-if [ $? -eq 0 ]; then
-    eval "$__conda_setup"
-else
-    if [ -f "/home/debian/miniconda3/etc/profile.d/conda.sh" ]; then
-        . "/home/debian/miniconda3/etc/profile.d/conda.sh"
-    else
-        export PATH="/home/debian/miniconda3/bin:$PATH"
-    fi
-fi
-unset __conda_setup
-# <<< conda initialize <<<
+# =============== end =============== #
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+

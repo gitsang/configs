@@ -43,7 +43,7 @@ export GOPRIVATE='gitlab.home.c8g.top'
 
 # rust
 # shellcheck disable=SC1090,SC1091
-source "$HOME/.cargo/env"
+# source "$HOME/.cargo/env"
 
 # node
 # node_version=v18.18.2
