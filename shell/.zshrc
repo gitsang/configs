@@ -26,6 +26,19 @@ setopt HIST_REDUCE_BLANKS        # Remove superfluous blanks before recording en
 setopt HIST_VERIFY               # Don't execute immediately upon history expansion.
 setopt HIST_BEEP                 # Beep when accessing nonexistent history.
 
+# =============== utils =============== #
+
+time_it() {
+  local name="${1:-Command}"
+  shift
+  local cmd="${2}"
+  local start_time=$(date +%s%3N)
+
+  "$@"
+
+  echo "${name} loaded in $(($(date +%s%3N)-${start_time}))ms"
+}
+
 # =============== prompt option =============== #
 
 # color
@@ -140,35 +153,41 @@ if [[ ${plugin_loaded} != "true" ]]; then
     fpath=(~/.zsh/completion $fpath)
     autoload -Uz compinit && compinit -i
 
-    start_time=$(date +%s)
-    if [[ ! -d ~/.zsh/plugins/fzf-tab ]]; then
-        git clone https://github.com/Aloxaf/fzf-tab ~/.zsh/plugins/fzf-tab
-    fi
-    source ~/.zsh/plugins/fzf-tab/fzf-tab.plugin.zsh
-    echo "fzf-tab loaded in $(($(date +%s)-${start_time}))s"
+    load_fzf-tab() {
+      if [[ ! -d ~/.zsh/plugins/fzf-tab ]]; then
+          git clone https://github.com/Aloxaf/fzf-tab ~/.zsh/plugins/fzf-tab
+      fi
+      source ~/.zsh/plugins/fzf-tab/fzf-tab.plugin.zsh
+    }
+    time_it "fzf-tab" load_fzf-tab
 
-    start_time=$(date +%s)
-    if [[ ! -d ~/.zsh/plugins/zsh-autosuggestions ]]; then
-        git clone https://github.com/zsh-users/zsh-autosuggestions ~/.zsh/plugins/zsh-autosuggestions
-    fi
-    source ~/.zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-    echo "zsh-autosuggestions loaded in $(($(date +%s)-${start_time}))s"
+    load_zsh-autosuggestions() {
+      if [[ ! -d ~/.zsh/plugins/zsh-autosuggestions ]]; then
+          git clone https://github.com/zsh-users/zsh-autosuggestions ~/.zsh/plugins/zsh-autosuggestions
+      fi
+      source ~/.zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+    }
+    time_it "zsh-autosuggestions" load_zsh-autosuggestions
 
-    if [[ ! -d ~/.zsh/plugins/zsh-syntax-highlighting ]]; then
-        git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.zsh/plugins/zsh-syntax-highlighting
-    fi
-    source ~/.zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-    echo "zsh-syntax-highlighting loaded in $(($(date +%s)-${start_time}))s"
+    load_zsh-syntax-highlighting() {
+      if [[ ! -d ~/.zsh/plugins/zsh-syntax-highlighting ]]; then
+          git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.zsh/plugins/zsh-syntax-highlighting
+      fi
+      source ~/.zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+    }
+    time_it "zsh-syntax-highlighting" load_zsh-syntax-highlighting
 
-    start_time=$(date +%s)
-    if [[ ! -d ~/.zsh/plugins/zsh_codex ]]; then
-      git clone https://github.com/tom-doerr/zsh_codex.git ~/.zsh/plugins/zsh_codex
-    fi
-    source ~/.zsh/plugins/zsh_codex/zsh_codex.plugin.zsh
-    bindkey '^X' create_completion
-    echo "zsh_codex loaded in $(($(date +%s)-${start_time}))s"
+    load_zsh_codex() {
+      if [[ ! -d ~/.zsh/plugins/zsh_codex ]]; then
+        git clone https://github.com/tom-doerr/zsh_codex.git ~/.zsh/plugins/zsh_codex
+      fi
+      source ~/.zsh/plugins/zsh_codex/zsh_codex.plugin.zsh
+      bindkey '^X' create_completion
+    }
+    time_it "zsh_codex" load_zsh_codex
 
     plugin_loaded="true"
+    echo "plugin loaded"
 fi
 
 # =============== window title =============== #
