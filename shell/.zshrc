@@ -193,5 +193,4 @@ add-zsh-hook precmd set-window-title
 
 # =============== end =============== #
 
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
