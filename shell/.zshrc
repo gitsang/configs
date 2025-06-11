@@ -228,3 +228,4 @@ load_fzf() {
   [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 }
 time_it "fzf" load_fzf
+
