@@ -122,11 +122,12 @@ print_prompt() {
 print_rprompt() {
     # icon is generate from https://www.nerdfonts.com/cheat-sheet
     rprompt_configs=()
-    rprompt_configs+=("38"  "16" "\ue627 $(go version 2>/dev/null | sed 's/go version go\([0-9\.]*\) .*/\1/')")
-    rprompt_configs+=("221"  "16" "\ue73c $(python -V 2>/dev/null | sed 's/Python \([0-9\.]*\).*/\1/')")
-    rprompt_configs+=("160"  "16" "\ue738 $(command -v java >/dev/null && java -version 2>&1 | head -n1 | sed 's/\(.*\) version "\(.*\)" .*/\2/')")
-    rprompt_configs+=("22"  "16" "\ue74e $(node -v 2>/dev/null | sed 's/v\([0-9\.]*\)/\1/')")
-    rprompt_configs+=("$(colorcode "$(netgeo)")" "16" "\uf20e  $(netgeo)")
+    rprompt_configs+=("38"  "16"  "\ue627  $(go version 2>/dev/null | sed 's/go version go\([0-9\.]*\) .*/\1/') ")
+    rprompt_configs+=("221" "16"  "\ue73c  $(python -V 2>/dev/null | sed 's/Python \([0-9\.]*\).*/\1/') ")
+    rprompt_configs+=("21"  "189" "\ue620  $(lua -v 2>/dev/null | sed 's/Lua \([0-9]*\.[0-9]*\.[0-9]*\).*/\1/') ")
+    rprompt_configs+=("214" "16"  "\ue738  $(command -v java >/dev/null && java -version 2>&1 | head -n1 | sed 's/\(.*\) version "\(.*\)" .*/\2/') ")
+    rprompt_configs+=("22"  "189" "\ued0d  $(node -v 2>/dev/null | sed 's/v\([0-9\.]*\)/\1/') ")
+    rprompt_configs+=("$(colorcode "$(netgeo)")" "16" "\uf450  $(netgeo)")
     for (( i=1; i<${#rprompt_configs[@]}; i+=3 )); do
         rprompt_bg=${rprompt_configs[i]}
         rprompt_fg=${rprompt_configs[i+1]}
