@@ -145,7 +145,7 @@ prompt() {
   echo "%B"
   print_prompt
   echo "%b"
-  echo "%F{117} ➤  %f"
+  echo "%F{226}%(1j.[%j].)%f%F{117} ➤  %f"
 }
 
 rprompt() {
