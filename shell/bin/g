@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2068
 # Git wrapper script that implements common git commands
 
 # shellcheck source=/dev/null
@@ -130,7 +131,7 @@ lp)
   ;;
 a)
   shift
-  git add "$@"
+  git add $@
   ;;
 aa)
   git add --all .
@@ -144,32 +145,32 @@ cm)
   git commit -m "$*"
   ;;
 ps)
-  git push
+  git push $@
   ;;
 pl)
-  git pull
+  git pull $@
   ;;
 f)
-  git fetch
+  git fetch $@
   ;;
 t)
   git for-each-ref --sort=creatordate --format "%(creatordate): %(refname)" refs/tags
   ;;
 d)
   shift
-  git diff "$@"
+  git diff $@
   ;;
 dt)
   shift
-  git difftool "$@"
+  git difftoo $@
   ;;
 b)
   shift
-  git branch "$@"
+  git branch $@
   ;;
 bc)
   shift
-  git_branch_checkout "$@"
+  git_branch_checkout $@
   ;;
 tps)
   shift
@@ -180,7 +181,7 @@ au)
   ;;
 rb)
   shift
-  git_rebase "$@"
+  git_rebase $@
   ;;
 install)
   install_aliases
