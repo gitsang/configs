@@ -75,25 +75,25 @@ colorcode() {
 }
 
 netgeo() {
- local tty proxy_file proxy_last proxy_now netgeo_file netgeo_modtime
+  local tty proxy_file proxy_last proxy_now netgeo_file netgeo_modtime
 
- tty=$(tty | sed 's/\/dev\/pts\///')
- netgeo_file="/tmp/.netgeo_geo__tty${tty}"
- proxy_file="/tmp/.netgeo_proxy__tty${tty}"
+  tty=$(tty | sed 's/\/dev\/pts\///')
+  netgeo_file="/tmp/.netgeo_geo__tty${tty}"
+  proxy_file="/tmp/.netgeo_proxy__tty${tty}"
 
- netgeo_modtime=$(stat -c %Y ${netgeo_file} 2> /dev/null)
- proxy_last=$(cat ${proxy_file} 2> /dev/null)
- proxy_now=$(echo -e "${http_proxy}\n${https_proxy}\n${HTTP_PROXY}\n${HTTPS_PROXY}" | tee "${proxy_file}")
+  netgeo_modtime=$(stat -c %Y ${netgeo_file} 2> /dev/null)
+  proxy_last=$(cat ${proxy_file} 2> /dev/null)
+  proxy_now=$(echo -e "${http_proxy}\n${https_proxy}\n${HTTP_PROXY}\n${HTTPS_PROXY}" | tee "${proxy_file}")
 
- if [[ -f "${netgeo_file}" ]]; then
-   cat ${netgeo_file} | jq -r '"\(.city) (\(.country))"'
- fi
- if [[ "${proxy_now}" != "${proxy_last}" ]]; then
-   curl -skL "https://ipinfo.io/json" 2> /dev/null > ${netgeo_file}
- fi
- if [[ -z "${netgeo_modtime}" ]] || [[ $(( $(date +%s) - ${netgeo_modtime} )) -gt 300 ]]; then
-   nohup curl -skL "https://ipinfo.io/json" 2> /dev/null > ${netgeo_file} &
- fi
+  if [[ -f "${netgeo_file}" ]]; then
+    cat ${netgeo_file} | jq -r '"\(.city) (\(.country))"'
+  fi
+  if [[ "${proxy_now}" != "${proxy_last}" ]]; then
+    curl -skL "https://ipinfo.io/json" 2> /dev/null > ${netgeo_file}
+  fi
+  if [[ -z "${netgeo_modtime}" ]] || [[ $(( $(date +%s) - ${netgeo_modtime} )) -gt 300 ]]; then
+    nohup curl -skL "https://ipinfo.io/json" 2> /dev/null > ${netgeo_file} &
+  fi
 }
 
 print_prompt() {
