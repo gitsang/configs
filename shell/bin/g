@@ -26,6 +26,7 @@ show_help() {
   echo "  dt      - git difftool"
   echo "  b       - git branch"
   echo "  bc      - interactively checkout a branch"
+  echo "  bm      - git branch manager"
   echo "  tps     - create and push a tag"
   echo "  au      - add, commit using AI, and push"
   echo "  rb      - interactive rebase"
@@ -98,6 +99,7 @@ alias gd="g d"
 alias gdt="g dt"
 alias gb="g b"
 alias gbc="g bc"
+alias gbm="g bm"
 alias gtps="g tps"
 alias gau="g au"
 alias grb="g rb"
@@ -145,12 +147,15 @@ cm)
   git commit -m "$*"
   ;;
 ps)
+  shift
   git push $@
   ;;
 pl)
+  shift
   git pull $@
   ;;
 f)
+  shift
   git fetch $@
   ;;
 t)
@@ -171,6 +176,10 @@ b)
 bc)
   shift
   git_branch_checkout $@
+  ;;
+bm)
+  shift
+  git-branch-manager.sh
   ;;
 tps)
   shift
