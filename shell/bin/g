@@ -11,6 +11,7 @@ show_help() {
   echo ""
   echo "Commands:"
   echo "  s       - git status"
+  echo "  st      - git stage"
   echo "  l       - git lg"
   echo "  lg      - git log"
   echo "  ls      - git log --stat"
@@ -84,6 +85,7 @@ install_aliases() {
   mkdir -p ~/.local/etc
   cat >~/.local/etc/g.alias <<'EOF'
 alias gs="g s"
+alias gst="g st"
 alias gl="g l"
 alias glg="g lg"
 alias gls="g ls"
@@ -119,6 +121,9 @@ case "$1" in
 s)
   git status
   ;;
+st)
+  git-stage.sh
+  ;;
 l)
   git lg
   ;;
@@ -141,8 +146,7 @@ aa)
 cm)
   shift
   if [ -z "$1" ]; then
-    echo "Error: Commit message is required"
-    exit 1
+    git-commit.sh
   fi
   git commit -m "$*"
   ;;
