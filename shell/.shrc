@@ -12,7 +12,8 @@ export LANG=C.UTF-8
 export TZ=Asia/Shanghai
 
 # display
-REMOTE_IP="$(who am i | sed 's/.*(\(.*\)).*/\1/g')"
+# REMOTE_IP="$(who am i | sed 's/.*(\(.*\)).*/\1/g')"
+REMOTE_IP="$(echo "$SSH_CONNECTION" | awk '{print $1}')"
 export REMOTE_IP=${REMOTE_IP}
 export DISPLAY="${REMOTE_IP}:0.0"
 
@@ -39,11 +40,12 @@ export PATH=$PATH:$GOBIN:$GOROOT/bin
 export GONOPROXY='*.c8g.top'
 export GONOSUMDB='*.c8g.top'
 export GOPRIVATE='gitlab.home.c8g.top'
+export GOEXPERIMENT=jsonv2
 #export GOCACHE=off
 
 # rust
 # shellcheck disable=SC1090,SC1091
-# source "$HOME/.cargo/env"
+source "$HOME/.cargo/env"
 
 # node
 # node_version=v18.18.2
@@ -126,7 +128,7 @@ alias d='docker'
 alias dps='docker ps --format "table {{.Image}}\t{{.Networks}}\t{{.Status}}\t{{.RunningFor}}\t{{.State}}\t{{.Names}}"'
 alias rekcod='docker run --rm -v /var/run/docker.sock:/var/run/docker.sock nexdrew/rekcod'
 dpl() {
-  mirror=dockerhub.icu
+  mirror=docker.1ms.run
   docker pull "${mirror}/${1}"
   docker tag "${mirror}/${1}" "${1}"
   docker rmi "${mirror}/${1}"
@@ -137,9 +139,6 @@ dive() {
     wagoodman/dive:latest \
     "$@"
 }
-
-# k8s
-alias k='kubectl'
 
 # podman
 alias p='podman'

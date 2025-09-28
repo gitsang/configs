@@ -230,3 +230,15 @@ load_fzf() {
 }
 time_it "fzf" load_fzf
 
+load_pnpm() {
+  [ -d "/home/debian/.local/share/pnpm" ] || return
+
+  export PNPM_HOME="/home/debian/.local/share/pnpm"
+  case ":$PATH:" in
+    *":$PNPM_HOME:"*) ;;
+    *) export PATH="$PNPM_HOME:$PATH" ;;
+  esac
+}
+time_it "pnpm" load_pnpm
+
+fortune | cowsay | lolcat
