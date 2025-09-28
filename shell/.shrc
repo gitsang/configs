@@ -45,17 +45,11 @@ export GOEXPERIMENT=jsonv2
 
 # rust
 # shellcheck disable=SC1090,SC1091
-source "$HOME/.cargo/env"
+[ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
 
 # node
-# node_version=v18.18.2
-# node_distro=linux-x64
-# export PATH=/usr/local/lib/nodejs/node-$node_version-$node_distro/bin:$PATH
 export PATH=$PATH:/usr/local/lib/nodejs/bin
-
-# libreoffice
-export LibreOffice_PATH=/opt/libreoffice7.1/program
-export PATH=$PATH:$LibreOffice_PATH
+export PATH=$PATH:~/.local/node/bin
 
 # term
 #export TERM=xterm
