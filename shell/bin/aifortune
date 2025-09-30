@@ -19,4 +19,8 @@ aifortune() {
   echo "${sentences}" | jq -r '.choices[0].message.content' | cowsay | lolcat
 }
 
-aifortune
+if [ "${ENABLE_AI}" == "true" ]; then
+  aifortune
+else
+  fortune | cowsay | lolcat
+fi
