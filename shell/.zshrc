@@ -10,7 +10,7 @@ time_it() {
 
   "$@"
 
-  echo "${name} loaded in $(($(date +%s%3N)-${start_time}))ms"
+  echo "${name} loaded in $(($(date +%s%3N)-${start_time}))ms" | lolcat
 }
 
 # =============== aliases =============== #

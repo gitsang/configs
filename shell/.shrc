@@ -30,7 +30,7 @@ export MAVEN_HOME=/usr/share/maven
 export PATH=$PATH:${JAVA_HOME}/bin:${M2_HOME}/bin
 
 # golang
-#export GOROOT=/usr/local/go
+# export GOROOT=/usr/local/go
 export GOPATH=~/.go
 export GOBIN=$GOPATH/bin
 export GOPROXY=https://goproxy.cn
@@ -41,7 +41,7 @@ export GONOPROXY='*.c8g.top'
 export GONOSUMDB='*.c8g.top'
 export GOPRIVATE='gitlab.home.c8g.top'
 export GOEXPERIMENT=jsonv2
-#export GOCACHE=off
+# export GOCACHE=off
 
 # rust
 # shellcheck disable=SC1090,SC1091
@@ -52,13 +52,17 @@ export PATH=$PATH:/usr/local/lib/nodejs/bin
 export PATH=$PATH:~/.local/node/bin
 
 # term
-#export TERM=xterm
+# export TERM=xterm
 export TERM=xterm-256color
-#export TERM=screen-256color-bce
+# export TERM=screen-256color-bce
 export HISTSIZE=1000000
 
 # podman
 export BUILDAH_FORMAT=docker
+
+# cuda
+export PATH=${PATH}:/usr/local/cuda/bin
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/cuda/lib64
 
 # =============== Common specific aliases and functions =============== #
 
