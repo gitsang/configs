@@ -57,11 +57,7 @@ git_add_and_commit() {
   pushd "$(git rev-parse --show-toplevel)" || exit
   git add --all .
   branch=$(git branch | grep "\*" | awk '{print $NF}')
-  # go install github.com/coder/aicommit/cmd/aicommit@main
-  aicommit \
-    --openai-base-url "${AICOMMIT_API_URL}" \
-    --openai-key "${AICOMMIT_API_KEY}" \
-    --model "${AICOMMIT_MODEL}"
+  crush run "Generate a commit message for staged change"
   git push origin "${branch}"
   popd || exit
 }
