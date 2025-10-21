@@ -248,4 +248,13 @@ load_brew() {
 }
 time_it "brew" load_brew
 
+load_fnm() {
+  FNM_PATH="/home/sang/.local/share/fnm"
+  if [ -d "$FNM_PATH" ]; then
+    export PATH="$FNM_PATH:$PATH"
+    eval "`fnm env`"
+  fi
+}
+time_it "fnm" load_fnm
+
 fortune | cowsay | lolcat
