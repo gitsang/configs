@@ -1,0 +1,201 @@
+#!/bin/bash
+# shellcheck disable=SC2295
+
+# Docker Pull Helper (dpl) - A script to pull Docker images from different mirrors
+# Usage: dpl [OPTIONS] IMAGE
+
+set -e
+
+# Default configuration
+DEFAULT_MIRROR="docker.io"
+SCRIPT_NAME="$(basename "$0")"
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Function to print usage
+usage() {
+  cat <<EOF
+Usage: $SCRIPT_NAME [OPTIONS] IMAGE
+
+Options:
+  -h, --help         Show this message and exit
+  --mirror <mirror>  Mirror to pull from
+
+Examples:
+  $SCRIPT_NAME ubuntu:latest
+  $SCRIPT_NAME --mirror=192.168.0.100:2379 ubuntu:latest
+  $SCRIPT_NAME --mirror=hub.docker.com linuxserver/ubuntu:latest
+  $SCRIPT_NAME --mirror=docker-mirror.com linuxserver/ubuntu:latest
+  $SCRIPT_NAME --mirror=ghcr-mirror.io ghcr.io/linuxserver/ubuntu:1.7.0
+
+EOF
+}
+
+# Function to print error message
+error() {
+  echo -e "${RED}Error: $1${NC}" >&2
+  exit 1
+}
+
+# Function to print success message
+success() {
+  echo -e "${GREEN}Success: $1${NC}"
+}
+
+# Function to print info message
+info() {
+  echo -e "${YELLOW}Info: $1${NC}"
+}
+
+# Function to extract registry from image
+extract_registry() {
+  local image="$1"
+
+  # If image contains a dot or colon followed by slash, it has a registry
+  if [[ "$image" =~ ^([^/]+\.[^/]+/[^/]+|localhost[:/][^/]+/[^/]+|[^/]+:[0-9]+/[^/]+) ]]; then
+    echo "${image%%/*}"
+  else
+    echo ""
+  fi
+}
+
+# Function to replace registry in image name
+replace_registry() {
+  local image="$1"
+  local new_registry="$2"
+
+  local current_registry
+  current_registry=$(extract_registry "$image")
+
+  if [[ -n "$current_registry" ]]; then
+    # Replace existing registry
+    echo "${image#$current_registry/}"
+    local image_path="${image#$current_registry/}"
+    echo "$new_registry/$image_path"
+  else
+    # No registry in original image, just prepend mirror
+    echo "$new_registry/$image"
+  fi
+}
+
+# Function to construct full image name based on mirror
+construct_image_name() {
+  local mirror="$1"
+  local image="$2"
+
+  # If mirror is default docker.io and image has no registry, use as-is
+  if [[ "$mirror" == "docker.io" ]]; then
+    local current_registry
+    current_registry=$(extract_registry "$image")
+    if [[ -z "$current_registry" ]]; then
+      echo "$image"
+      return
+    fi
+  fi
+
+  # Replace registry with mirror
+  local current_registry
+  current_registry=$(extract_registry "$image")
+  if [[ -n "$current_registry" ]]; then
+    # Replace existing registry
+    local image_path="${image#$current_registry/}"
+    echo "$mirror/$image_path"
+  else
+    # No registry in original image, just prepend mirror
+    echo "$mirror/$image"
+  fi
+}
+
+# Function to extract original image name for tagging
+get_original_image_name() {
+  local mirror="$1"
+  local image="$2"
+  local full_image="$3"
+
+  # If we used a mirror to replace an existing registry (like ghcr.io -> ghcr-mirror.io)
+  # then we should tag it back to the original registry
+  if [[ "$image" == ghcr.io/* && "$mirror" == "ghcr-mirror.io" ]]; then
+    echo "$image"
+    return
+  fi
+
+  # If the full image name is different from the requested image, tag it as requested
+  if [[ "$full_image" != "$image" ]]; then
+    echo "$image"
+  else
+    return
+  fi
+}
+
+# Parse command line arguments
+MIRROR="$DEFAULT_MIRROR"
+IMAGE=""
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+  -h | --help)
+    usage
+    exit 0
+    ;;
+  --mirror=*)
+    MIRROR="${1#*=}"
+    shift
+    ;;
+  --mirror)
+    MIRROR="$2"
+    shift 2
+    ;;
+  -*)
+    error "Unknown option: $1"
+    ;;
+  *)
+    if [[ -z "$IMAGE" ]]; then
+      IMAGE="$1"
+    else
+      error "Multiple images specified. Only one image is allowed."
+    fi
+    shift
+    ;;
+  esac
+done
+
+# Validate arguments
+if [[ -z "$IMAGE" ]]; then
+  error "No image specified. Use --help for usage information."
+fi
+
+# Validate mirror format
+if [[ ! "$MIRROR" =~ ^[a-zA-Z0-9.-]+:[0-9]+$ && ! "$MIRROR" =~ ^[a-zA-Z0-9.-]+$ ]]; then
+  error "Invalid mirror format: $MIRROR"
+fi
+
+# Validate image format
+if [[ ! "$IMAGE" =~ ^[a-zA-Z0-9._/-]+(:[a-zA-Z0-9._-]+)?$ ]]; then
+  error "Invalid image format: $IMAGE"
+fi
+
+# Construct the full image name
+FULL_IMAGE_NAME=$(construct_image_name "$MIRROR" "$IMAGE")
+
+info "Pulling image: $FULL_IMAGE_NAME"
+
+# Execute docker pull command
+if docker pull "$FULL_IMAGE_NAME"; then
+  success "Image pulled successfully: $FULL_IMAGE_NAME"
+
+  # If we pulled from a different name, tag it with the original image name
+  if [[ "$FULL_IMAGE_NAME" != "$IMAGE" ]]; then
+    info "Tagging image as: $IMAGE"
+    if docker tag "$FULL_IMAGE_NAME" "$IMAGE"; then
+      success "Image tagged successfully as: $IMAGE"
+    else
+      error "Failed to tag image as: $IMAGE"
+    fi
+  fi
+else
+  error "Failed to pull image: $FULL_IMAGE_NAME"
+fi
