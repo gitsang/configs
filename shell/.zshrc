@@ -241,4 +241,11 @@ load_pnpm() {
 }
 time_it "pnpm" load_pnpm
 
-aifortune
+load_brew() {
+  [ -d "/home/linuxbrew/.linuxbrew" ] || return
+
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+}
+time_it "brew" load_brew
+
+fortune | cowsay | lolcat
