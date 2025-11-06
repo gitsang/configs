@@ -18,7 +18,7 @@ export REMOTE_IP=${REMOTE_IP}
 export DISPLAY="${REMOTE_IP}:0.0"
 
 # path
-export PATH=$PATH:/sbin/:/bin:/usr/sbin:/usr/bin:~/.local/bin:/usr/local/bin:.
+export PATH=$PATH:/sbin/:/bin:/usr/sbin:/usr/bin:~/.local/bin:/usr/local/bin:/usr/games:.
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/:./lib:./libs:.
 
 # java
@@ -125,12 +125,6 @@ dirdiff() {
 alias d='docker'
 alias dps='docker ps --format "table {{.Image}}\t{{.Networks}}\t{{.Status}}\t{{.RunningFor}}\t{{.State}}\t{{.Names}}"'
 alias rekcod='docker run --rm -v /var/run/docker.sock:/var/run/docker.sock nexdrew/rekcod'
-dpl() {
-  mirror=docker.1ms.run
-  docker pull "${mirror}/${1}"
-  docker tag "${mirror}/${1}" "${1}"
-  docker rmi "${mirror}/${1}"
-}
 dive() {
   docker run --rm -it \
     -v /var/run/docker.sock:/var/run/docker.sock \
@@ -202,3 +196,5 @@ mk() {
   make "${@}"
   cd - || exit 1
 }
+
+alias grep='grep --color --exclude-dir=node_modules --exclude-dir="\.*"'
