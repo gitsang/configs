@@ -29,7 +29,7 @@ show_help() {
   echo "  bc      - interactively checkout a branch"
   echo "  bm      - git branch manager"
   echo "  tps     - create and push a tag"
-  echo "  au      - add, commit using AI, and push"
+  echo "  au      - add, commit using AI, and push (use --quick for auto commit, --simple for aicommit)"
   echo "  rb      - interactive rebase"
 }
 
@@ -54,10 +54,36 @@ git_tag_push() {
 
 # Add, AI commit, and push
 git_add_and_commit() {
+  QUICK=false
+  SIMPLE=false
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+    --quick)
+      QUICK=true
+      shift
+      ;;
+    --simple)
+      SIMPLE=true
+      shift
+      ;;
+    *)
+      shift
+      ;;
+    esac
+  done
+
   pushd "$(git rev-parse --show-toplevel)" || exit
   git add --all .
   branch=$(git branch | grep "\*" | awk '{print $NF}')
-  crush run "Generate a commit message for staged change"
+
+  if [ "$QUICK" = true ]; then
+    git commit -m "auto commit"
+  elif [ "$SIMPLE" = true ]; then
+    aicommit --openai-base-url "${AICOMMIT_API_URL}" --openai-key "${AICOMMIT_API_KEY}" --model "${AICOMMIT_MODEL}"
+  else
+    crush run "Generate a commit message for staged change"
+  fi
+
   git push origin "${branch}"
   popd || exit
 }
@@ -186,7 +212,8 @@ tps)
   git_tag_push "$@"
   ;;
 au)
-  git_add_and_commit
+  shift
+  git_add_and_commit "$@"
   ;;
 rb)
   shift
