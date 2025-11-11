@@ -2,9 +2,9 @@
 
 # Function to display usage information
 show_usage() {
-	echo "Usage: $0 [-u] [-y]"
-	echo "  -u    Update existing files in the destination"
-	echo "  -y    Automatic yes to all prompts (with -u)"
+  echo "Usage: $0 [-u] [-y]"
+  echo "  -u    Update existing files in the destination"
+  echo "  -y    Automatic yes to all prompts (with -u)"
 }
 
 # Default settings
@@ -13,18 +13,18 @@ auto_confirm=0
 
 # Parse command line options
 while getopts "uy" opt; do
-	case $opt in
-	u)
-		update_mode=1
-		;;
-	y)
-		auto_confirm=1
-		;;
-	*)
-		show_usage
-		exit 1
-		;;
-	esac
+  case $opt in
+  u)
+    update_mode=1
+    ;;
+  y)
+    auto_confirm=1
+    ;;
+  *)
+    show_usage
+    exit 1
+    ;;
+  esac
 done
 
 # Create necessary directories
@@ -33,69 +33,70 @@ mkdir -p ~/.local/etc
 
 # Function to handle file copying with optional confirmation
 copy_files() {
-	local src_dir=$1
-	local dest_dir=$2
-	local file_type=$3
+  local src_dir=$1
+  local dest_dir=$2
+  local file_type=$3
 
-	echo "Processing $file_type..."
+  echo "Processing $file_type..."
 
-	# First check if the source directory exists
-	if [ ! -d "$src_dir" ]; then
-		echo "$file_type directory $src_dir not found, skipping"
-		return
-	fi
+  # First check if the source directory exists
+  if [ ! -d "$src_dir" ]; then
+    echo "$file_type directory $src_dir not found, skipping"
+    return
+  fi
 
-	# Get list of files to update
-	if [ $update_mode -eq 1 ] && [ $auto_confirm -eq 0 ]; then
-		# Interactive update mode
-		for file in "$src_dir"/*; do
-			if [ -f "$file" ]; then
-				filename=$(basename "$file")
-				dest_file="$dest_dir/$filename"
+  # Get list of files to update
+  if [ $update_mode -eq 1 ] && [ $auto_confirm -eq 0 ]; then
+    # Interactive update mode
+    for file in "$src_dir"/*; do
+      if [ -f "$file" ]; then
+        filename=$(basename "$file")
+        dest_file="$dest_dir/$filename"
 
-				# New file - always copy
-				if [ ! -f "$dest_file" ]; then
-					echo "Copying new file: $filename"
-					cp -v "$file" "$dest_file"
-					continue
-				fi
+        # New file - always copy
+        if [ ! -f "$dest_file" ]; then
+          echo "Copying new file: $filename"
+          cp -v "$file" "$dest_file"
+          continue
+        fi
 
-				# Existing file - ask for confirmation
-				echo -n "Update existing file $filename? (y/n): "
-				read -r answer
-				if [[ $answer == y* || $answer == Y* ]]; then
-					cp -v "$file" "$dest_file"
-				else
-					echo "Skipping $filename"
-				fi
-			fi
-		done
-	else
-		# Set rsync options based on update mode
-		if [ $update_mode -eq 1 ]; then
-			# With -u -y, update all files automatically
-			echo "Force updating all $file_type..."
-			rsync_opts="-avPh"
-		else
-			# Default mode, only copy files that don't exist
-			echo "Copying only new $file_type..."
-			rsync_opts="-avPh --ignore-existing"
-		fi
+        # Existing file - ask for confirmation
+        echo -n "Update existing file $filename? (y/n): "
+        read -r answer
+        if [[ $answer == y* || $answer == Y* ]]; then
+          cp -v "$file" "$dest_file"
+        else
+          echo "Skipping $filename"
+        fi
+      fi
+    done
+  else
+    # Set rsync options based on update mode
+    if [ $update_mode -eq 1 ]; then
+      # With -u -y, update all files automatically
+      echo "Force updating all $file_type..."
+      rsync_opts="-avPh"
+    else
+      # Default mode, only copy files that don't exist
+      echo "Copying only new $file_type..."
+      rsync_opts="-avPh --ignore-existing"
+    fi
 
-		# Perform the rsync operation
-		rsync "${rsync_opts}" "$src_dir"/* "$dest_dir"/
-	fi
+    # Perform the rsync operation
+    # shellcheck disable=SC2086
+    rsync ${rsync_opts} "$src_dir"/* "$dest_dir"/
+  fi
 }
 
 # Display current mode
 if [ $update_mode -eq 1 ]; then
-	if [ $auto_confirm -eq 1 ]; then
-		echo "Mode: Force update all files with automatic confirmation"
-	else
-		echo "Mode: Force update with per-file confirmation"
-	fi
+  if [ $auto_confirm -eq 1 ]; then
+    echo "Mode: Force update all files with automatic confirmation"
+  else
+    echo "Mode: Force update with per-file confirmation"
+  fi
 else
-	echo "Mode: Only copy files that don't exist in the destination"
+  echo "Mode: Only copy files that don't exist in the destination"
 fi
 
 # Create necessary directories
