@@ -2,23 +2,28 @@
 
 # Function to display usage information
 show_usage() {
-  echo "Usage: $0 [-u] [-y]"
+  echo "Usage: $0 [-u] [-y] [-b]"
   echo "  -u    Update existing files in the destination"
   echo "  -y    Automatic yes to all prompts (with -u)"
+  echo "  -b    Install only bin directory (skip etc)"
 }
 
 # Default settings
 update_mode=0
 auto_confirm=0
+bin_only=0
 
 # Parse command line options
-while getopts "uy" opt; do
+while getopts "uyb" opt; do
   case $opt in
   u)
     update_mode=1
     ;;
   y)
     auto_confirm=1
+    ;;
+  b)
+    bin_only=1
     ;;
   *)
     show_usage
@@ -99,6 +104,10 @@ else
   echo "Mode: Only copy files that don't exist in the destination"
 fi
 
+if [ $bin_only -eq 1 ]; then
+  echo "Mode: Installing only bin directory (skipping etc)"
+fi
+
 # Create necessary directories
 mkdir -p ~/.local/bin
 mkdir -p ~/.local/etc
@@ -106,7 +115,13 @@ mkdir -p ~/.local/etc
 # Process bin directory
 copy_files "./bin" ~/.local/bin "executables"
 
-# Process etc directory
-copy_files "./etc" ~/.local/etc "configuration files"
+# Process etc directory (conditional copy based on bin-only mode)
+if [ $bin_only -eq 0 ]; then
+  copy_files "./etc" ~/.local/etc "configuration files"
+else
+  echo "Processing etc directory (bin-only mode - only new files)..."
+  echo "Copying only new configuration files..."
+  rsync -avPh --ignore-existing "./etc"/* ~/.local/etc/
+fi
 
 echo "Installation complete"
