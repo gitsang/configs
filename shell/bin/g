@@ -79,6 +79,9 @@ git_add_and_commit() {
   if [ "$QUICK" = true ]; then
     git commit -m "auto commit"
   elif [ "$SIMPLE" = true ]; then
+    if ! command -v some_command &>/dev/null; then
+      go install github.com/coder/aicommit/cmd/aicommit@main
+    fi
     aicommit --openai-base-url "${AICOMMIT_API_URL}" --openai-key "${AICOMMIT_API_KEY}" --model "${AICOMMIT_MODEL}"
   else
     crush run "Generate a commit message for staged change"
