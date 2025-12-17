@@ -1,0 +1,16 @@
+#!/bin/bash
+
+if [[ ${#} == 0 ]]; then
+  OPTIONAL_VENVS=()
+  while IFS= read -r -d '' file; do
+    OPTIONAL_VENVS+=("$(basename "$file")")
+  done < <(find "${HOME}/.pyvenv" -maxdepth 1 -type d -not -path "${HOME}/.pyvenv" -print0 2>/dev/null)
+fi
+
+SELECTED_VENV=$(printf "%s\n" "${OPTIONAL_VENVS[@]}" | fzf --height 40% --layout reverse)
+if [ -n "$SELECTED_VENV" ]; then
+  echo "Select Python Venv ${SELECTED_VENV}"
+
+  # shellcheck source=/dev/null
+  source "${HOME}/.pyvenv/${SELECTED_VENV}/bin/activate"
+fi
