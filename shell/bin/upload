@@ -19,5 +19,5 @@ if [ -d "${FILE_PATH}" ]; then
   tar -zcvf "${TGZ_FILE_PATH}" -C "${FILE_PATH}" .
   echo "$(curl -s -T "${TGZ_FILE_PATH}" "${UPLOAD_URL}/${FILE_NAME}.tar.gz")"
 elif [ -f "${FILE_PATH}" ]; then
-  echo "$(curl -s -T "${FILE_PATH}" "${UPLOAD_URL}/${FILE_NAME}")"
+  echo "$(curl -s -T "${FILE_PATH}" "${UPLOAD_URL}/${FILE_NAME// /%20}")"
 fi
