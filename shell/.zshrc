@@ -18,6 +18,10 @@ time_it() {
 time_it "shrc" source ~/.shrc
 alias sss='source ~/.zshrc'
 
+# =============== bindkey =============== #
+
+bindkey -e
+
 # =============== history =============== #
 
 export HISTFILE=~/.zsh_history
@@ -89,10 +93,10 @@ netgeo() {
     cat ${netgeo_file} | jq -r '"\(.city) (\(.country))"'
   fi
   if [[ "${proxy_now}" != "${proxy_last}" ]]; then
-    curl -skL "https://ipinfo.io/json" 2> /dev/null > ${netgeo_file}
+    curl -skL "https://api.ip.sb/geoip" 2> /dev/null > ${netgeo_file}
   fi
-  if [[ -z "${netgeo_modtime}" ]] || [[ $(( $(date +%s) - ${netgeo_modtime} )) -gt 300 ]]; then
-    nohup curl -skL "https://ipinfo.io/json" 2> /dev/null > ${netgeo_file} &
+  if [[ -z "${netgeo_modtime}" ]] || [[ $(( $(date +%s) - ${netgeo_modtime} )) -gt 1800 ]]; then
+    nohup curl -skL "https://api.ip.sb/geoip" 2> /dev/null > ${netgeo_file} &
   fi
 }
 
@@ -203,14 +207,15 @@ fi
 #DISABLE_AUTO_TITLE="true"
 set-window-title() {
     # pwd_short=$(sed 's:\([^/]\)[^/]*/:\1/:g' <<< $PWD)
-    pwd_base=$(basename $PWD)
-    title="${USER}@$(hostname -s) : ${pwd_base}"
+    # pwd_base=$(basename $PWD)
+    # title="${USER}@$(hostname -s) : ${pwd_base}"
+    title="${USER}@$(hostname)"
 
-    git_remote=$(git remote -v 2> /dev/null | head -n1 | awk '{print $2}')
-    if [[ -n "${git_remote}" ]]; then
-        git_repo=$(basename ${git_remote} | awk -F. '{print $1}')
-        title="${git_repo} | ${title}"
-    fi
+    # git_remote=$(git remote -v 2> /dev/null | head -n1 | awk '{print $2}')
+    # if [[ -n "${git_remote}" ]]; then
+    #     git_repo=$(basename ${git_remote} | awk -F. '{print $1}')
+    #     title="${git_repo} | ${title}"
+    # fi
 
     window_title="\e]0;${title}\a"
     echo -ne "$window_title"
@@ -263,5 +268,14 @@ load_nvm() {
   [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 }
 time_it "nvm" load_nvm
+
+load_bun() {
+  # bun completions
+  [ -s "/home/sang/.bun/_bun" ] && source "/home/sang/.bun/_bun"
+  # bun
+  export BUN_INSTALL="$HOME/.bun"
+  export PATH="$BUN_INSTALL/bin:$PATH"
+}
+time_it "bun" load_bun
 
 fortune | cowsay | lolcat
