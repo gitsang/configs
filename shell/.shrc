@@ -1,5 +1,103 @@
 #!/bin/bash
 
+# =============== utils =============== #
+
+time_it() {
+  local name="${1:-Command}"
+  local start_time
+  start_time=$(date +%s%3N)
+
+  shift && "$@"
+
+  echo "${name} loaded in $(($(date +%s%3N) - start_time))ms"
+}
+
+# =============== source =============== #
+
+load_brew() {
+  [ -d "/home/linuxbrew/.linuxbrew" ] || return
+
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+}
+time_it "brew" load_brew
+
+load_bun() {
+  # bun completions
+  [ -s "/home/sang/.bun/_bun" ] && source "/home/sang/.bun/_bun"
+  # bun
+  export BUN_INSTALL="$HOME/.bun"
+  export PATH="$BUN_INSTALL/bin:$PATH"
+}
+time_it "bun" load_bun
+
+load_golang() {
+  # export GOROOT=/usr/local/go
+  export GOPATH=~/.go
+  export GOBIN=$GOPATH/bin
+  export GOPROXY=https://goproxy.cn,https://goproxy.ylops.com,https://goproxy.io,direct
+  export GO111MODULE=on
+  export CGO_ENABLED=0
+  export PATH=$PATH:$GOBIN:$GOROOT/bin
+  export GONOPROXY='*.c8g.top,*.yealink.com'
+  export GONOSUMDB='*.c8g.top,*.yealink.com'
+  export GOPRIVATE='gitlab.home.c8g.top,gitcode.yealink.com'
+  export GOEXPERIMENT=jsonv2
+  # export GOCACHE=off
+}
+time_it "golang" load_golang
+
+load_cargo() {
+  [ -s "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
+}
+time_it "cargo" load_cargo
+
+load_java() {
+  # java
+  export JAVA_HOME='/usr/lib/jvm/jdk-22.0.1'
+  export JRE_HOME=${JAVA_HOME}/jre
+  export CLASSPATH=.:${JAVA_HOME}/lib:${JRE_HOME}/lib:/usr/local/lib
+  export M2_HOME=/usr/share/maven
+  export MAVEN_HOME=/usr/share/maven
+  export PATH=$PATH:${JAVA_HOME}/bin:${M2_HOME}/bin
+}
+time_it "java" load_java
+
+load_fnm() {
+  FNM_PATH="/home/sang/.local/share/fnm"
+  if [ -d "$FNM_PATH" ]; then
+    export PATH="$FNM_PATH:$PATH"
+    eval "$(fnm env)"
+  fi
+}
+time_it "fnm" load_fnm
+
+load_pnpm() {
+  [ -d "${HOME}/.local/share/pnpm" ] || return
+
+  export PNPM_HOME="${HOME}/.local/share/pnpm"
+  case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+  esac
+}
+time_it "pnpm" load_pnpm
+
+load_cuda() {
+  export PATH=${PATH}:/usr/local/cuda/bin
+  export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/cuda/lib64
+}
+time_it "cuda" load_cuda
+
+load_g-alias() {
+  [ -f "${HOME}/.local/etc/g.alias" ] && source "${HOME}/.local/etc/g.alias"
+}
+time_it "g.alias" load_g-alias
+
+load_fzf() {
+  [ -f "${HOME}/.fzf.zsh" ] && source "${HOME}/.fzf.zsh"
+}
+time_it "fzf" load_fzf
+
 # =============== Environment Variable =============== #
 
 # locales
@@ -20,49 +118,16 @@ export DISPLAY="${REMOTE_IP}:0.0"
 # path
 export PATH=$PATH:/sbin/:/bin:/usr/sbin:/usr/bin:~/.local/bin:/usr/local/bin:/usr/games:.
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/:./lib:./libs:.
-
-# java
-export JAVA_HOME='/usr/lib/jvm/jdk-22.0.1'
-export JRE_HOME=${JAVA_HOME}/jre
-export CLASSPATH=.:${JAVA_HOME}/lib:${JRE_HOME}/lib:/usr/local/lib
-export M2_HOME=/usr/share/maven
-export MAVEN_HOME=/usr/share/maven
-export PATH=$PATH:${JAVA_HOME}/bin:${M2_HOME}/bin
-
-# golang
-# export GOROOT=/usr/local/go
-export GOPATH=~/.go
-export GOBIN=$GOPATH/bin
-export GOPROXY=https://goproxy.cn
-export GO111MODULE=on
-export CGO_ENABLED=0
-export PATH=$PATH:$GOBIN:$GOROOT/bin
-export GONOPROXY='*.c8g.top'
-export GONOSUMDB='*.c8g.top'
-export GOPRIVATE='gitlab.home.c8g.top'
-export GOEXPERIMENT=jsonv2
-# export GOCACHE=off
-
-# rust
-# shellcheck disable=SC1090,SC1091
-[ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
-
-# node
-export PATH=$PATH:/usr/local/lib/nodejs/bin
-export PATH=$PATH:~/.local/node/bin
+export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig
 
 # term
 # export TERM=xterm
-# export TERM=xterm-256color
+export TERM=xterm-256color
 # export TERM=screen-256color-bce
 export HISTSIZE=1000000
 
 # podman
 export BUILDAH_FORMAT=docker
-
-# cuda
-export PATH=${PATH}:/usr/local/cuda/bin:/usr/local/cuda-13.0/bin
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/cuda/lib64:/usr/local/cuda-13.0/lib64
 
 # editor
 export EDITOR=nvim

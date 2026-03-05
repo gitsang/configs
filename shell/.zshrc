@@ -4,13 +4,12 @@
 
 time_it() {
   local name="${1:-Command}"
-  shift
-  local cmd="${2}"
-  local start_time=$(date +%s%3N)
+  local start_time
+  start_time=$(date +%s%3N)
 
-  "$@"
+  shift && "$@"
 
-  echo "${name} loaded in $(($(date +%s%3N)-${start_time}))ms"
+  echo "${name} loaded in $(($(date +%s%3N) - start_time))ms"
 }
 
 # =============== aliases =============== #
@@ -128,6 +127,7 @@ print_rprompt() {
     rprompt_configs=()
     rprompt_configs+=("38"  "16"  "\ue627  $(go version 2>/dev/null | sed 's/go version go\([0-9\.]*\) .*/\1/') ")
     rprompt_configs+=("221" "16"  "\ue73c  $(python3 -V 2>/dev/null | sed 's/Python \([0-9\.]*\).*/\1/') ")
+    rprompt_configs+=("130" "16"  "\uf323  $(cargo version 2>/dev/null | sed 's/cargo \([0-9\.]*\) .*/\1/') ")
     rprompt_configs+=("21"  "189" "\ue620  $(lua -v 2>&1 | sed 's/Lua \([0-9]*\.[0-9]*\.[0-9]*\).*/\1/') ")
     rprompt_configs+=("214" "16"  "\ue738  $(command -v java >/dev/null && java -version 2>&1 | head -n1 | sed 's/\(.*\) version "\(.*\)" .*/\2/') ")
     rprompt_configs+=("22"  "189" "\ued0d  $(node -v 2>/dev/null | sed 's/v\([0-9\.]*\)/\1/') ")
@@ -225,50 +225,4 @@ add-zsh-hook precmd set-window-title
 
 # =============== end =============== #
 
-load_g-alias() {
-  [ -f ~/.local/etc/g.alias ] && source ~/.local/etc/g.alias
-}
-time_it "g.alias" load_g-alias
-
-load_fzf() {
-  [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-}
-time_it "fzf" load_fzf
-
-load_pnpm() {
-  [ -d "/home/debian/.local/share/pnpm" ] || return
-
-  export PNPM_HOME="/home/debian/.local/share/pnpm"
-  case ":$PATH:" in
-    *":$PNPM_HOME:"*) ;;
-    *) export PATH="$PNPM_HOME:$PATH" ;;
-  esac
-}
-time_it "pnpm" load_pnpm
-
-load_brew() {
-  [ -d "/home/linuxbrew/.linuxbrew" ] || return
-
-  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-}
-time_it "brew" load_brew
-
-load_fnm() {
-  FNM_PATH="/home/sang/.local/share/fnm"
-  if [ -d "$FNM_PATH" ]; then
-    export PATH="$FNM_PATH:$PATH"
-    eval "`fnm env`"
-  fi
-}
-time_it "fnm" load_fnm
-
-load_bun() {
-  # bun completions
-  [ -s "/home/sang/.bun/_bun" ] && source "/home/sang/.bun/_bun"
-  # bun
-  export BUN_INSTALL="$HOME/.bun"
-  export PATH="$BUN_INSTALL/bin:$PATH"
-}
-time_it "bun" load_bun
-
-fortune | cowsay | lolcat
+fortune -s | cowsay | lolcat
