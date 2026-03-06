@@ -54,16 +54,12 @@ git_tag_push() {
 
 # Add, AI commit, and push
 git_add_and_commit() {
+  SIMPLE=true
   QUICK=false
-  SIMPLE=false
   while [[ $# -gt 0 ]]; do
     case $1 in
     --quick)
       QUICK=true
-      shift
-      ;;
-    --simple)
-      SIMPLE=true
       shift
       ;;
     *)
@@ -83,8 +79,6 @@ git_add_and_commit() {
       go install github.com/coder/aicommit/cmd/aicommit@main
     fi
     aicommit --openai-base-url "${AICOMMIT_API_URL}" --openai-key "${AICOMMIT_API_KEY}" --model "${AICOMMIT_MODEL}"
-  else
-    crush run "Generate a commit message for staged change"
   fi
 
   git push origin "${branch}"
