@@ -77,25 +77,74 @@ colorcode() {
   echo $scaled_number
 }
 
+netgeo_init() {
+  local geo_db geo_db_url
+
+  geo_db="$HOME/.local/share/GeoIP/GeoLite2-City.mmdb"
+  geo_db_url="https://git.io/GeoLite2-City.mmdb"
+
+  # Install mmdblookup if missing
+  if ! command -v mmdblookup &> /dev/null; then
+    if command -v apt &> /dev/null; then
+      sudo apt install -y mmdb-bin 2> /dev/null
+    elif command -v pacman &> /dev/null; then
+      sudo pacman -S --noconfirm mmdb-bin 2> /dev/null
+    fi
+  fi
+
+  # Download geo database if missing or outdated (every 7 days)
+  local db_modtime
+  db_modtime=$(stat -c %Y "${geo_db}" 2> /dev/null)
+  if [[ -z "${db_modtime}" ]]; then
+    mkdir -p "$(dirname "${geo_db}")"
+    curl -skL "${geo_db_url}" -o "${geo_db}.tmp" 2> /dev/null && mv "${geo_db}.tmp" "${geo_db}"
+  elif [[ $(( $(date +%s) - ${db_modtime} )) -gt 604800 ]]; then
+    nohup curl -skL "${geo_db_url}" -o "${geo_db}.tmp" 2> /dev/null \; mv "${geo_db}.tmp" "${geo_db}" &> /dev/null &
+  fi
+}
+time_it "netgeo_db" netgeo_init
+
 netgeo() {
-  local tty proxy_file proxy_last proxy_now netgeo_file netgeo_modtime
+  local tty proxy_file proxy_last proxy_now netgeo_file netgeo_modtime geo_db
 
   tty=$(tty | sed 's/\/dev\/pts\///')
   netgeo_file="/tmp/.netgeo_geo__tty${tty}"
   proxy_file="/tmp/.netgeo_proxy__tty${tty}"
+  geo_db="$HOME/.local/share/GeoIP/GeoLite2-City.mmdb"
 
   netgeo_modtime=$(stat -c %Y ${netgeo_file} 2> /dev/null)
   proxy_last=$(cat ${proxy_file} 2> /dev/null)
   proxy_now=$(echo -e "${http_proxy}\n${https_proxy}\n${HTTP_PROXY}\n${HTTPS_PROXY}" | tee "${proxy_file}")
 
+  # Check if refresh is needed
+  local need_refresh=0
+  if [[ "${proxy_now}" != "${proxy_last}" ]]; then
+    need_refresh=1
+  elif [[ -z "${netgeo_modtime}" ]] || [[ $(( $(date +%s) - ${netgeo_modtime} )) -gt 1800 ]]; then
+    need_refresh=1
+  fi
+
+  # Refresh geo data
+  if [[ ${need_refresh} -eq 1 ]]; then
+    # Try local geo lookup first, fallback to API
+    if [[ -f "${geo_db}" ]] && command -v mmdblookup &> /dev/null; then
+      local ip result city country
+      ip=$(curl -skL "https://api.ip.sb/ip" 2> /dev/null)
+      if [[ -n "${ip}" ]]; then
+        result=$(mmdblookup --file "${geo_db}" --ip "${ip}" city names en 2> /dev/null | grep -oP '"\K[^"]+(?=")' | head -1)
+        city="${result:-Unknown}"
+        result=$(mmdblookup --file "${geo_db}" --ip "${ip}" country names en 2> /dev/null | grep -oP '"\K[^"]+(?=")' | head -1)
+        country="${result:-Unknown}"
+        echo "{\"city\":\"${city}\",\"country\":\"${country}\"}" > "${netgeo_file}"
+      fi
+    else
+      curl -skL "https://api.ip.sb/geoip" 2> /dev/null > "${netgeo_file}"
+    fi
+  fi
+
+  # Always output from netgeo_file
   if [[ -f "${netgeo_file}" ]]; then
     cat ${netgeo_file} | jq -r '"\(.city) (\(.country))"'
-  fi
-  if [[ "${proxy_now}" != "${proxy_last}" ]]; then
-    curl -skL "https://api.ip.sb/geoip" 2> /dev/null > ${netgeo_file}
-  fi
-  if [[ -z "${netgeo_modtime}" ]] || [[ $(( $(date +%s) - ${netgeo_modtime} )) -gt 1800 ]]; then
-    nohup curl -skL "https://api.ip.sb/geoip" 2> /dev/null > ${netgeo_file} &
   fi
 }
 
