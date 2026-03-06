@@ -151,6 +151,7 @@ netgeo() {
 print_prompt() {
   prompt_configs=()
   prompt_configs+=($(( $? == 0 ? 223 : $? )) "16" "%?")
+  prompt_configs+=("111" "16" "tty$(tty | sed 's/\/dev\/pts\///')")
   prompt_configs+=("114" "16" "%n")
   prompt_configs+=("$(colorcode "$(hostname)")" "16" "\ueba9  %M")
   prompt_configs+=("42"  "16" "$(date "+%Y-%m-%d")")
@@ -176,7 +177,7 @@ print_rprompt() {
     rprompt_configs=()
     rprompt_configs+=("38"  "16"  "\ue627  $(go version 2>/dev/null | sed 's/go version go\([0-9\.]*\) .*/\1/') ")
     rprompt_configs+=("221" "16"  "\ue73c  $(python3 -V 2>/dev/null | sed 's/Python \([0-9\.]*\).*/\1/') ")
-    rprompt_configs+=("130" "16"  "\uf323  $(cargo version 2>/dev/null | sed 's/cargo \([0-9\.]*\) .*/\1/') ")
+    rprompt_configs+=("166" "16"  "\uf323  $(cargo version 2>/dev/null | sed 's/cargo \([0-9\.]*\) .*/\1/') ")
     rprompt_configs+=("21"  "189" "\ue620  $(lua -v 2>&1 | sed 's/Lua \([0-9]*\.[0-9]*\.[0-9]*\).*/\1/') ")
     rprompt_configs+=("214" "16"  "\ue738  $(command -v java >/dev/null && java -version 2>&1 | head -n1 | sed 's/\(.*\) version "\(.*\)" .*/\2/') ")
     rprompt_configs+=("22"  "189" "\ued0d  $(node -v 2>/dev/null | sed 's/v\([0-9\.]*\)/\1/') ")
