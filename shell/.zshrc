@@ -5,11 +5,11 @@
 time_it() {
   local name="${1:-Command}"
   local start_time
-  start_time=$(date +%s%3N)
+  start_time=$(date +%s%N)
 
   shift && "$@"
 
-  echo "${name} loaded in $(($(date +%s%3N) - start_time))ms"
+  echo "${name} loaded in $((($(date +%s%N) - start_time) / 1000 / 1000))ms"
 }
 
 # =============== aliases =============== #
@@ -93,13 +93,16 @@ netgeo_init() {
   fi
 
   # Download geo database if missing or outdated (every 7 days)
-  local db_modtime
+  local db_modtime need_refresh
   db_modtime=$(stat -c %Y "${geo_db}" 2> /dev/null)
   if [[ -z "${db_modtime}" ]]; then
+    need_refresh = 1
+  elif [[ $(( $(date +%s) - ${db_modtime} )) -gt 604800 ]]; then
+    need_refresh = 1
+  fi
+  if [[ ${need_refresh} -eq 1 ]]; then
     mkdir -p "$(dirname "${geo_db}")"
     curl -skL "${geo_db_url}" -o "${geo_db}.tmp" 2> /dev/null && mv "${geo_db}.tmp" "${geo_db}"
-  elif [[ $(( $(date +%s) - ${db_modtime} )) -gt 604800 ]]; then
-    nohup curl -skL "${geo_db_url}" -o "${geo_db}.tmp" 2> /dev/null \; mv "${geo_db}.tmp" "${geo_db}" &> /dev/null &
   fi
 }
 time_it "netgeo_db" netgeo_init
@@ -107,10 +110,11 @@ time_it "netgeo_db" netgeo_init
 netgeo() {
   local tty proxy_file proxy_last proxy_now netgeo_file netgeo_modtime geo_db
 
-  tty=$(tty | sed 's/\/dev\/pts\///')
+  tty=$(tty | sed 's/\//_/g')
   netgeo_file="/tmp/.netgeo_tty${tty}_geo"
   proxy_file="/tmp/.netgeo_tty${tty}_proxy"
   geo_db="$HOME/.local/share/GeoIP/GeoLite2-City.mmdb"
+  touch "${netgeo_file}" "${proxy_file}"
 
   netgeo_modtime=$(stat -c %Y ${netgeo_file} 2> /dev/null)
   proxy_last=$(cat ${proxy_file} 2> /dev/null)
@@ -144,7 +148,7 @@ netgeo() {
 
   # Always output from netgeo_file
   if [[ -f "${netgeo_file}" ]]; then
-    cat ${netgeo_file} | jq -r '"\(.city) (\(.country))"'
+    cat ${netgeo_file} | jq -r '"\(.city) (\(.country))"' 2>/dev/null
   fi
 }
 
@@ -178,7 +182,7 @@ print_rprompt() {
     rprompt_configs+=("38"  "16"  "\ue627  $(go version 2>/dev/null | sed 's/go version go\([0-9\.]*\) .*/\1/') ")
     rprompt_configs+=("221" "16"  "\ue73c  $(python3 -V 2>/dev/null | sed 's/Python \([0-9\.]*\).*/\1/') ")
     rprompt_configs+=("166" "16"  "\uf323  $(cargo version 2>/dev/null | sed 's/cargo \([0-9\.]*\) .*/\1/') ")
-    rprompt_configs+=("21"  "189" "\ue620  $(lua -v 2>&1 | sed 's/Lua \([0-9]*\.[0-9]*\.[0-9]*\).*/\1/') ")
+    rprompt_configs+=("21"  "189" "\ue620  $(lua -v 2>/dev/null | sed 's/Lua \([0-9]*\.[0-9]*\.[0-9]*\).*/\1/') ")
     rprompt_configs+=("214" "16"  "\ue738  $(command -v java >/dev/null && java -version 2>&1 | head -n1 | sed 's/\(.*\) version "\(.*\)" .*/\2/') ")
     rprompt_configs+=("22"  "189" "\ued0d  $(node -v 2>/dev/null | sed 's/v\([0-9\.]*\)/\1/') ")
     rprompt_configs+=("$(colorcode "$(netgeo)")" "16" "\uf450  $(netgeo)")

@@ -5,11 +5,11 @@
 time_it() {
   local name="${1:-Command}"
   local start_time
-  start_time=$(date +%s%3N)
+  start_time=$(date +%s%N)
 
   shift && "$@"
 
-  echo "${name} loaded in $(($(date +%s%3N) - start_time))ms"
+  echo "${name} loaded in $((($(date +%s%N) - start_time) / 1000 / 1000))ms"
 }
 
 # =============== source =============== #
