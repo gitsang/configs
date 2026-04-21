@@ -96,9 +96,9 @@ netgeo_init() {
   local db_modtime need_refresh
   db_modtime=$(stat -c %Y "${geo_db}" 2> /dev/null)
   if [[ -z "${db_modtime}" ]]; then
-    need_refresh = 1
+    need_refresh=1
   elif [[ $(( $(date +%s) - ${db_modtime} )) -gt 604800 ]]; then
-    need_refresh = 1
+    need_refresh=1
   fi
   if [[ ${need_refresh} -eq 1 ]]; then
     mkdir -p "$(dirname "${geo_db}")"
