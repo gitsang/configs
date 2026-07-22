@@ -110,7 +110,7 @@ time_it "netgeo_db" netgeo_init
 netgeo() {
   local tty proxy_file proxy_last proxy_now netgeo_file netgeo_modtime geo_db
 
-  tty=$(tty | sed 's/\//_/g')
+  tty=$(tty | sed 's/\/dev\/pts\///')
   netgeo_file="/tmp/.netgeo_tty${tty}_geo"
   proxy_file="/tmp/.netgeo_tty${tty}_proxy"
   geo_db="$HOME/.local/share/GeoIP/GeoLite2-City.mmdb"
