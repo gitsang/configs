@@ -5,27 +5,37 @@
 time_it() {
   local name="${1:-Command}"
   local start_time
-  start_time=$(date +%s%N)
+  start_time=$(date +%s%3N)
 
   shift && "$@"
 
-  echo "${name} loaded in $((($(date +%s%N) - start_time) / 1000 / 1000))ms"
+  echo "${name} loaded in $(($(date +%s%3N) - start_time))ms"
 }
 
 # =============== source =============== #
 
+load_secret() {
+  [ -f "${HOME}/.secret" ] && . "${HOME}/.secret"
+}
+time_it "secret" load_secret
+
+load_deno() {
+  [ -f "${HOME}/.deno/env" ] && . "${HOME}/.deno/env"
+  if [[ ":$FPATH:" != *":${HOME}/.zsh/completions:"* ]]; then
+    export FPATH="${HOME}/.zsh/completions:$FPATH"
+  fi
+}
+time_it "deno" load_deno
+
 load_brew() {
   [ -d "/home/linuxbrew/.linuxbrew" ] || return
-
   eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 }
 time_it "brew" load_brew
 
 load_bun() {
-  # bun completions
-  [ -s "/home/sang/.bun/_bun" ] && source "/home/sang/.bun/_bun"
-  # bun
-  export BUN_INSTALL="$HOME/.bun"
+  [ -s "${HOME}/.bun/_bun" ] && . "${HOME}/.bun/_bun"
+  export BUN_INSTALL="${HOME}/.bun"
   export PATH="$BUN_INSTALL/bin:$PATH"
 }
 time_it "bun" load_bun
@@ -47,7 +57,7 @@ load_golang() {
 time_it "golang" load_golang
 
 load_cargo() {
-  [ -s "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
+  [ -s "${HOME}/.cargo/env" ] && . "${HOME}/.cargo/env"
 }
 time_it "cargo" load_cargo
 
@@ -63,7 +73,7 @@ load_java() {
 time_it "java" load_java
 
 load_fnm() {
-  FNM_PATH="/home/sang/.local/share/fnm"
+  FNM_PATH="${HOME}/.local/share/fnm"
   if [ -d "$FNM_PATH" ]; then
     export PATH="$FNM_PATH:$PATH"
     eval "$(fnm env)"
@@ -178,6 +188,7 @@ alias .......='cd ../../../../../../'
 
 # tail
 alias tailf='tail -f'
+alias tsshm='tmux new-session -A -s tssh-session \; send-keys "tssh" Enter'
 
 # nvim diff
 dirdiff() {
@@ -186,7 +197,7 @@ dirdiff() {
   DIR2=$(printf '%q' "$1")
   shift
   # shellcheck disable=SC2068
-  nvim $@ -c "DirDiff $DIR1 $DIR2"
+  nvim -c "packadd nvim.difftool" -c "lua require('difftool').open('$DIR1', '$DIR2', { ignore = {'.git', 'node_modules', '*.log', 'vendor', '.venv', '.omx', '.sisyphus', '.ruff_cache', 'ansible_collections'} })"
 }
 
 # docker
